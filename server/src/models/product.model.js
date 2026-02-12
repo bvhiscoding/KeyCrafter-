@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Product name is required'],
       trim: true,
+      minlength: [3, 'Product name must be at least 3 characters'],
       maxlength: [200, 'Product name must be less than 200 characters'],
     },
     slug: {
@@ -53,9 +54,11 @@ const productSchema = new mongoose.Schema(
       ref: 'Brand',
       required: [true, 'Product brand is required'],
     },
-    images: {
-      type: String,
-    },
+    images: [
+      {
+        type: String,
+      },
+    ],
     thumbnail: {
       type: String,
       required: [true, 'Product thumbnail is required'],
@@ -192,3 +195,5 @@ productSchema.virtual('displayPrice').get(function () {
 productSchema.virtual('inStock').get(function () {
   return this.stock > 0;
 });
+
+module.exports = mongoose.model('Product', productSchema);

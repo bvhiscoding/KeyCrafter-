@@ -83,10 +83,18 @@ reviewSchema.statics.calcAverageRatings = async function (productId) {
       reviewCount: 0,
     });
   }
-  reviewSchema.post('save', function () {
-    this.constructor.calcAverageRating(this.product);
-  });
-  reviewSchema.post('remove', function () {
-    this.constructor.calcAverageRating(this.product);
-  });
 };
+
+// Middleware to update product ratings after review save
+reviewSchema.post('save', function () {
+  this.constructor.calcAverageRatings(this.product);
+});
+
+// Middleware to update product ratings after review delete
+reviewSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    await doc.constructor.calcAverageRatings(doc.product);
+  }
+});
+
+module.exports = mongoose.model('Review', reviewSchema);

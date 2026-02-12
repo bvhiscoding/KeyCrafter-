@@ -47,3 +47,10 @@ brandSchema.virtual('productCount', {
   foreignField: 'brand',
   count: true
 });
+
+// Indexes
+brandSchema.index({ slug: 1 }, { unique: true });
+brandSchema.index({ isActive: 1 });
+brandSchema.index({ name: 1 });
+
+module.exports = mongoose.model('Brand', brandSchema);

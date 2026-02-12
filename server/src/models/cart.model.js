@@ -36,7 +36,7 @@ const cartSchema = new mongoose.Schema(
 );
 cartSchema.index({ user: 1 }, { unique: true });
 cartSchema.index({ 'items.product': 1 });
-cartSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 2592000 }); // TTL: 30 days
+cartSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 7776000 }); // TTL: 90 days (increased from 30)
 
 
 
@@ -48,11 +48,12 @@ cartSchema.virtual('totalItems').get(function() {
 // Total price of all items in cart
 cartSchema.virtual('totalPrice').get(function() {
   return this.items.reduce((sum, item) => {
-    if (item.product && item.product.price) {
-      const price = item.product.salePrice || item.product.price;
-      return sum + (price * item.quantity);
+    // Handle cases where product might be deleted or not populated
+    if (!item.product || !item.product.price) {
+      return sum;
     }
-    return sum;
+    const price = item.product.salePrice || item.product.price;
+    return sum + (price * item.quantity);
   }, 0);
 });
 

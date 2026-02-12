@@ -59,7 +59,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+      enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
       default: 'pending',
     },
     paymentMethod: {
@@ -118,7 +118,7 @@ const orderSchema = new mongoose.Schema(
       {
         status: {
           type: String,
-          enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+          enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
           required: [true, 'Status is required'],
         },
         time: {
@@ -164,11 +164,15 @@ orderSchema.pre('save', async function(next) {
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
     
+    // Fix: Create separate date objects to avoid mutation
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    
     // Count orders today
     const count = await this.constructor.countDocuments({
       createdAt: {
-        $gte: new Date(today.setHours(0, 0, 0, 0)),
-        $lt: new Date(today.setHours(23, 59, 59, 999))
+        $gte: startOfDay,
+        $lt: endOfDay
       }
     });
     

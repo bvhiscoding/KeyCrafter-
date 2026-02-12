@@ -9,18 +9,16 @@ const OrderStatus = {
   SHIPPED: 'shipped', // Đang giao hàng
   DELIVERED: 'delivered', // Đã giao thành công
   CANCELLED: 'cancelled', // Đã hủy
-  REFUNDED: 'refunded', // Đã hoàn tiền
 };
 
 // Valid transitions
 const OrderStatusTransitions = {
   pending: ['confirmed', 'cancelled'],
   confirmed: ['processing', 'cancelled'],
-  processing: ['shipped'],
+  processing: ['shipped', 'cancelled'],
   shipped: ['delivered'],
-  delivered: ['refunded'],
+  delivered: [],
   cancelled: [],
-  refunded: [],
 };
 const PaymentStatus = {
   PENDING: 'pending', // Chờ thanh toán

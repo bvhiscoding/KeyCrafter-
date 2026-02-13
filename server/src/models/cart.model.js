@@ -34,10 +34,8 @@ const cartSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   },
 );
-cartSchema.index({ user: 1 }, { unique: true });
 cartSchema.index({ 'items.product': 1 });
-// TTL: 90 days
-cartSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 7776000 });
+cartSchema.index({ updatedAt: 1 }, { expireAfterSeconds: 2592000 });
 
 // Total amount of items in cart
 cartSchema.virtual('totalItems').get(function () {

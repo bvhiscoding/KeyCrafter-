@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -147,11 +148,11 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    suppressReservedKeysWarning: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
-productSchema.index({ slug: 1 }, { unique: true });
 productSchema.index({ category: 1 });
 productSchema.index({ brand: 1 });
 productSchema.index({ price: 1 });
@@ -171,7 +172,7 @@ productSchema.index(
   },
   {
     weights: { name: 10, tags: 5, description: 1 },
-  }
+  },
 );
 
 // Compound indexes
@@ -195,10 +196,9 @@ productSchema.virtual('displayPrice').get(function () {
 productSchema.virtual('inStock').get(function () {
   return this.stock > 0;
 });
-productSchema.pre('save', function (next) {
+productSchema.pre('save', function () {
   if (this.isModified('name')) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
-  next();
 });
 module.exports = mongoose.model('Product', productSchema);

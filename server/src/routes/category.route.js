@@ -18,14 +18,14 @@ router.post(
   protect,
   restrictTo('admin'),
   validate(createCategorySchema),
-  categoryController.createCategory
+  categoryController.createCategory,
 );
 router.put(
   '/:id',
   protect,
   restrictTo('admin'),
   validate(updateCategorySchema),
-  categoryController.updateCategory
+  categoryController.updateCategory,
 );
 router.delete('/:id', protect, restrictTo('admin'), categoryController.deleteCategory);
 

@@ -7,6 +7,7 @@ const {
   updateBrandSchema,
   brandListQuerySchema,
 } = require('../validations/brand.validation');
+
 const router = express.Router();
 router.get('/', validate(brandListQuerySchema, 'query'), brandController.getAllBrands);
 router.get('/:slug', brandController.getBrandBySlug);
@@ -15,14 +16,14 @@ router.post(
   protect,
   restrictTo('admin'),
   validate(createBrandSchema),
-  brandController.createBrand
+  brandController.createBrand,
 );
 router.put(
   '/:id',
   protect,
   restrictTo('admin'),
   validate(updateBrandSchema),
-  brandController.updateBrand
+  brandController.updateBrand,
 );
 router.delete('/:id', protect, restrictTo('admin'), brandController.deleteBrand);
 module.exports = router;

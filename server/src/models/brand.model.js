@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+
 const brandSchema = new mongoose.Schema(
   {
     name: {
@@ -35,6 +36,10 @@ const brandSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -51,13 +56,11 @@ brandSchema.virtual('productCount', {
 });
 
 // Indexes
-brandSchema.index({ slug: 1 }, { unique: true });
 brandSchema.index({ isActive: 1 });
-brandSchema.index({ name: 1 });
-brandSchema.pre('save', function (next) {
+brandSchema.index({ isDeleted: 1 });
+brandSchema.pre('save', function () {
   if (this.isModified('name')) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
-  next();
 });
 module.exports = mongoose.model('Brand', brandSchema);

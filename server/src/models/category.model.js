@@ -48,7 +48,7 @@ const categorySchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 categorySchema.virtual('products', {
@@ -58,15 +58,13 @@ categorySchema.virtual('products', {
   count: true,
 });
 
-categorySchema.index({ slug: 1 }, { unique: true });
-categorySchema.index({ isActive: 1,isDeleted: 1, order: 1 });
+categorySchema.index({ isActive: 1, isDeleted: 1, order: 1 });
 
 // Auto generate slug
-categorySchema.pre('save', function (next) {
+categorySchema.pre('save', function () {
   if (this.isModified('name')) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
-  next();
 });
 
 module.exports = mongoose.model('Category', categorySchema);

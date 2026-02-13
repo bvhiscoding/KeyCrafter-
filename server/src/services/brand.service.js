@@ -19,7 +19,12 @@ const getAllBrands = async (query) => {
     Brand.countDocuments(filter),
   ]);
 
-  return { items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  return {
+    items,
+    pagination: {
+      page, limit, total, totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 const getBrandBySlug = async (slug) => {
@@ -30,9 +35,7 @@ const getBrandBySlug = async (slug) => {
   return brand;
 };
 
-const createBrand = async (payload) => {
-  return Brand.create(payload);
-};
+const createBrand = async (payload) => Brand.create(payload);
 
 const updateBrand = async (id, payload) => {
   const brand = await Brand.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
@@ -48,7 +51,7 @@ const deleteBrand = async (id) => {
   const brand = await Brand.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true }
+    { new: true },
   );
   if (!brand) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Brand not found');
   return brand;

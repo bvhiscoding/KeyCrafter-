@@ -19,7 +19,12 @@ const getAllCategories = async (query) => {
     Category.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
     Category.countDocuments(filter),
   ]);
-  return { items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  return {
+    items,
+    pagination: {
+      page, limit, total, totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 const getCategoryBySlug = async (slug) => {
@@ -30,9 +35,7 @@ const getCategoryBySlug = async (slug) => {
   return category;
 };
 
-const createCategory = async (payload) => {
-  return Category.create(payload);
-};
+const createCategory = async (payload) => Category.create(payload);
 
 const updateCategory = async (id, payload) => {
   const category = await Category.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
@@ -49,7 +52,7 @@ const deleteCategory = async (id) => {
   const category = await Category.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true }
+    { new: true },
   );
 
   if (!category) {

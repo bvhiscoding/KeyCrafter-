@@ -7,6 +7,7 @@ const {
   updateProductSchema,
   productListQuerySchema,
 } = require('../validations/product.validation');
+
 const router = express.Router();
 router.get('/', validate(productListQuerySchema, 'query'), productController.getAllProducts);
 router.get('/:slug', productController.getProductBySlug);
@@ -15,14 +16,14 @@ router.post(
   protect,
   restrictTo('admin'),
   validate(createProductSchema),
-  productController.createProduct
+  productController.createProduct,
 );
 router.put(
   '/:id',
   protect,
   restrictTo('admin'),
   validate(updateProductSchema),
-  productController.updateProduct
+  productController.updateProduct,
 );
 router.delete('/:id', protect, restrictTo('admin'), productController.deleteProduct);
 module.exports = router;

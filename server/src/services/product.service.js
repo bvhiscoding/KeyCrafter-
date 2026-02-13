@@ -33,12 +33,14 @@ const getAllProducts = async (query) => {
   }
 
   if (query.category) {
-    const category = await Category.findOne({ slug: query.category, isDeleted: false }).select('_id');
+    const category = await Category.findOne({ slug: query.category, isDeleted: false }).select(
+      '_id',
+    );
     filter.category = category ? category._id : null;
   }
 
   if (query.brand) {
-    const brand = await Brand.findOne({ slug: query.brand, isDeleted: false }).select('_id');
+    const brand = await Brand.findOne({ slug: query.brand, isActive: true }).select('_id');
     filter.brand = brand ? brand._id : null;
   }
 
@@ -54,7 +56,9 @@ const getAllProducts = async (query) => {
 
   return {
     items,
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    pagination: {
+      page, limit, total, totalPages: Math.ceil(total / limit),
+    },
   };
 };
 
@@ -72,7 +76,7 @@ const getProductBySlug = async (slug) => {
 const createProduct = async (payload) => {
   const [category, brand] = await Promise.all([
     Category.findOne({ _id: payload.category, isDeleted: false }),
-    Brand.findOne({ _id: payload.brand, isDeleted: false }),
+    Brand.findOne({ _id: payload.brand, isActive: true }),
   ]);
 
   if (!category) {
@@ -93,7 +97,7 @@ const updateProduct = async (id, payload) => {
     }
   }
   if (payload.brand) {
-    const brand = await Brand.findOne({ _id: payload.brand, isDeleted: false });
+    const brand = await Brand.findOne({ _id: payload.brand, isActive: true });
     if (!brand) {
       throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Invalid brand');
     }
@@ -112,7 +116,7 @@ const deleteProduct = async (id) => {
   const product = await Product.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true }
+    { new: true },
   );
   if (!product) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Product not found');

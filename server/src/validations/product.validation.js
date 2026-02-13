@@ -1,7 +1,8 @@
-const Joi = require('Joi');
+const Joi = require('joi');
 
 const createProductSchema = Joi.object({
-  name: Joi.string().trim().min(3).max(200).required(),
+  name: Joi.string().trim().min(3).max(200)
+    .required(),
   description: Joi.string().trim().max(1000).required(),
   shortDescription: Joi.string().trim().max(300).allow('', null),
   price: Joi.number().min(0).required(),
@@ -36,7 +37,8 @@ const updateProductSchema = Joi.object({
 }).min(1); // At least one field must be provided for update
 const productListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(50).default(12),
+  limit: Joi.number().integer().min(1).max(50)
+    .default(12),
   search: Joi.string().trim().allow(''),
   category: Joi.string().trim(),
   brand: Joi.string().trim(),

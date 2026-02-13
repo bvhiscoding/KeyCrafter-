@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
+const ORDER_STATUS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+
 const orderSchema = new mongoose.Schema(
   {
     orderCode: {
       type: String,
       unique: true,
-      required: [true, 'Order code is required'],
       // Format: KC-YYYYMMDD-XXX (e.g., KC-20240115-001)
     },
     user: {
@@ -59,7 +60,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+      enum: ORDER_STATUS,
       default: 'pending',
     },
     paymentMethod: {
@@ -118,7 +119,7 @@ const orderSchema = new mongoose.Schema(
       {
         status: {
           type: String,
-          enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+          enum: ORDER_STATUS,
           required: [true, 'Status is required'],
         },
         time: {
@@ -145,7 +146,6 @@ const orderSchema = new mongoose.Schema(
   },
 );
 
-orderSchema.index({ orderCode: 1 }, { unique: true });
 orderSchema.index({ user: 1 }, { createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ paymentStatus: 1 });
@@ -156,45 +156,46 @@ orderSchema.index({ 'items.product': 1 });
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({ paymentStatus: 1, createdAt: -1 });
 
-// middleware
-// Auto generate orderCode
-orderSchema.pre('save', async function (next) {
-  if (this.isNew) {
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+orderSchema.pre('validate', async function () {
+  if (!this.orderCode) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}`;
 
-    // Fix: Create separate date objects to avoid mutation
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
 
     // Count orders today
     const count = await this.constructor.countDocuments({
       createdAt: {
         $gte: startOfDay,
-        $lt: endOfDay,
+        $lte: endOfDay,
       },
     });
 
     this.orderCode = `KC-${dateStr}-${String(count + 1).padStart(3, '0')}`;
-
-    // Add initial status to history
+  }
+  if (this.isNew && this.statusHistory.length === 0) {
     this.statusHistory.push({
-      status: 'pending',
+      status: this.status || 'pending',
       time: new Date(),
     });
   }
-  next();
 });
 
 // Update statusHistory when status changes
-orderSchema.pre('save', function (next) {
+orderSchema.pre('save', function () {
   if (this.isModified('status') && !this.isNew) {
     this.statusHistory.push({
       status: this.status,
       time: new Date(),
+      note: this.$locals?.statusNote,
     });
   }
-  next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);

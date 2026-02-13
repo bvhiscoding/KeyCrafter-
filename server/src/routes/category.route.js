@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-router.get('/', validate(categoryListQuerySchema), categoryController.getAllCategories);
+router.get('/', validate(categoryListQuerySchema, 'query'), categoryController.getAllCategories);
 router.get('/:slug', categoryController.getCategoryBySlug);
 
 router.post(

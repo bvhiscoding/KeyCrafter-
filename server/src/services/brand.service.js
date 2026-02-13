@@ -35,7 +35,7 @@ const createBrand = async (payload) => {
 };
 
 const updateBrand = async (id, payload) => {
-  const brand = await Brand.findByIdAndUpdate({ _id: id, isDeleted: false }, payload, {
+  const brand = await Brand.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
     new: true,
     runValidators: true,
   });

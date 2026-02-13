@@ -21,6 +21,7 @@ const getAllProducts = async (query) => {
   if (query.search) {
     filter.$text = { $search: query.search };
   }
+
   if (query.minPrice !== undefined || query.maxPrice !== undefined) {
     filter.price = {};
     if (query.minPrice !== undefined) {
@@ -29,38 +30,32 @@ const getAllProducts = async (query) => {
     if (query.maxPrice !== undefined) {
       filter.price.$lte = Number(query.maxPrice);
     }
-    if (query.category) {
-      const category = await Category.findOne({ slug: query.category });
-      if (category) {
-        filter.category = category._id;
-      } else {
-        filter.category = null; // No products will match
-      }
-    }
-    if (query.brand) {
-      const brand = await Brand.findOne({ slug: query.brand });
-      if (brand) {
-        filter.brand = brand._id;
-      } else {
-        filter.brand = null; // No products will match
-      }
-    }
-
-    const [items, total] = await Promise.all([
-      Product.find(filter)
-        .populate('category', 'name slug')
-        .populate('brand', 'name slug')
-        .sort(sortMap[query.sort] || sortMap.newest)
-        .skip(skip)
-        .limit(limit),
-      Product.countDocuments(filter),
-    ]);
-
-    return {
-      items,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
   }
+
+  if (query.category) {
+    const category = await Category.findOne({ slug: query.category, isDeleted: false }).select('_id');
+    filter.category = category ? category._id : null;
+  }
+
+  if (query.brand) {
+    const brand = await Brand.findOne({ slug: query.brand, isDeleted: false }).select('_id');
+    filter.brand = brand ? brand._id : null;
+  }
+
+  const [items, total] = await Promise.all([
+    Product.find(filter)
+      .populate('category', 'name slug')
+      .populate('brand', 'name slug')
+      .sort(sortMap[query.sort] || sortMap.newest)
+      .skip(skip)
+      .limit(limit),
+    Product.countDocuments(filter),
+  ]);
+
+  return {
+    items,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
 };
 
 const getProductBySlug = async (slug) => {
@@ -103,7 +98,7 @@ const updateProduct = async (id, payload) => {
       throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Invalid brand');
     }
   }
-  const product = await Product.findByIdAndUpdate({ _id: id, isDeleted: false }, payload, {
+  const product = await Product.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
     new: true,
     runValidators: true,
   });
@@ -114,7 +109,7 @@ const updateProduct = async (id, payload) => {
 };
 
 const deleteProduct = async (id) => {
-  const product = await Product.findByIdAndUpdate(
+  const product = await Product.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
     { new: true }

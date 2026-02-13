@@ -4,7 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const categoryService = require('../services/category.service');
 
 const getAllCategories = asyncHandler(async (req, res) => {
-  const response = await categoryService.getAllCategories();
+  const response = await categoryService.getAllCategories(req.query);
   res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Fetched categories'));
 });
 

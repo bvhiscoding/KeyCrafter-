@@ -27,6 +27,7 @@ const getCategoryBySlug = async (slug) => {
   if (!category) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Category not found');
   }
+  return category;
 };
 
 const createCategory = async (payload) => {
@@ -34,7 +35,7 @@ const createCategory = async (payload) => {
 };
 
 const updateCategory = async (id, payload) => {
-  const category = await Category.findByIdAndUpdate({ _id: id, isDeleted: false }, payload, {
+  const category = await Category.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
     new: true,
     runValidators: true,
   });
@@ -45,7 +46,7 @@ const updateCategory = async (id, payload) => {
 };
 
 const deleteCategory = async (id) => {
-  const category = await Category.findByIdAndUpdate(
+  const category = await Category.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
     { new: true }

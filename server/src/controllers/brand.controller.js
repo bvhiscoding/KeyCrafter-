@@ -4,7 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const brandService = require('../services/brand.service');
 
 const getAllBrands = asyncHandler(async (req, res) => {
-  const response = await brandService.getAllBrands();
+  const response = await brandService.getAllBrands(req.query);
   res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Fetched brands'));
 });
 

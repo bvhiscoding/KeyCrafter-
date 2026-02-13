@@ -5,6 +5,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const errorMiddleware = require('./middlewares/error.middleware');
 const routes = require('./routes');
+
 const app = express();
 
 // Middleware

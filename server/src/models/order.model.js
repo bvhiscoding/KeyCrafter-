@@ -142,7 +142,7 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 orderSchema.index({ orderCode: 1 }, { unique: true });
@@ -156,43 +156,42 @@ orderSchema.index({ 'items.product': 1 });
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({ paymentStatus: 1, createdAt: -1 });
 
-
 // middleware
 // Auto generate orderCode
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function (next) {
   if (this.isNew) {
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
-    
+
     // Fix: Create separate date objects to avoid mutation
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-    
+
     // Count orders today
     const count = await this.constructor.countDocuments({
       createdAt: {
         $gte: startOfDay,
-        $lt: endOfDay
-      }
+        $lt: endOfDay,
+      },
     });
-    
+
     this.orderCode = `KC-${dateStr}-${String(count + 1).padStart(3, '0')}`;
-    
+
     // Add initial status to history
     this.statusHistory.push({
       status: 'pending',
-      time: new Date()
+      time: new Date(),
     });
   }
   next();
 });
 
 // Update statusHistory when status changes
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', function (next) {
   if (this.isModified('status') && !this.isNew) {
     this.statusHistory.push({
       status: this.status,
-      time: new Date()
+      time: new Date(),
     });
   }
   next();

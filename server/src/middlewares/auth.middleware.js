@@ -8,7 +8,7 @@ const { verifyToken } = require('../utils/generateToken');
 const protect = asyncHandler(async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+    [, token] = req.headers.authorization.split(' ');
   }
   if (!token) {
     throw new ApiError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED);
@@ -30,12 +30,10 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-const restrictTo =
-  (...roles) =>
-  (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      throw new ApiError(HTTP_STATUS.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
-    }
-    next();
-  };
+const restrictTo = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    throw new ApiError(HTTP_STATUS.FORBIDDEN, AUTH_MESSAGES.FORBIDDEN);
+  }
+  next();
+};
 module.exports = { protect, restrictTo };

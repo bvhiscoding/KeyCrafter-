@@ -1,6 +1,7 @@
 const HTTP_STATUS = require('../constants/httpStatus');
 const { COMMON_MESSAGES } = require('../constants/messages');
 
+// eslint-disable-next-line no-unused-vars
 const errorMiddleware = (err, req, res, next) => {
   let statusCode = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
   let message = err.message || COMMON_MESSAGES.INTERNAL_SERVER_ERROR;
@@ -36,6 +37,5 @@ const errorMiddleware = (err, req, res, next) => {
   }
   res.status(statusCode).json(response);
 };
-
 
 module.exports = errorMiddleware;

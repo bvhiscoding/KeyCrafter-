@@ -1,5 +1,11 @@
 const express = require('express');
 const authRoutes = require('./auth.route');
+const categoryRoutes = require('./category.route');
+const brandRoutes = require('./brand.route');
+const productRoutes = require('./product.route');
 const router = express.Router();
 router.use('/auth', authRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/brands', brandRoutes);
+router.use('/products', productRoutes);
 module.exports = router;

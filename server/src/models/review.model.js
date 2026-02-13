@@ -47,12 +47,12 @@ const reviewSchema = new mongoose.Schema(
 
     helpfulCount: {
       type: Number,
-      default: 0, //Like useful votes
+      default: 0, // Like useful votes
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Ensure each user can only review once per product
@@ -91,7 +91,7 @@ reviewSchema.post('save', function () {
 });
 
 // Middleware to update product ratings after review delete
-reviewSchema.post('findOneAndDelete', async function (doc) {
+reviewSchema.post('findOneAndDelete', async (doc) => {
   if (doc) {
     await doc.constructor.calcAverageRatings(doc.product);
   }

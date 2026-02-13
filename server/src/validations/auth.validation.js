@@ -1,5 +1,6 @@
-const joi = require('joi');
-const passwordRule = joi
+const Joi = require('Joi');
+
+const passwordRule = Joi
   .string()
   .min(8)
   .max(30)
@@ -8,34 +9,38 @@ const passwordRule = joi
     'string.pattern.base':
       'Password must include at least one lowercase letter, one uppercase letter, and one number',
   });
-const registerSchema = joi.object({
-    name: joi.string().trim().min(2).max(50).required(),
-    email: joi.string().trim().lowercase().email().required(),
-    password: passwordRule.required(),
-})
+const registerSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(50)
+    .required(),
+  email: Joi.string().trim().lowercase().email()
+    .required(),
+  password: passwordRule.required(),
+});
 
-const loginSchema = joi.object({
-    email: joi.string().trim().lowercase().email().required(),
-    password: joi.string().required(),
-})
+const loginSchema = Joi.object({
+  email: Joi.string().trim().lowercase().email()
+    .required(),
+  password: Joi.string().required(),
+});
 
-const forgotPasswordSchema = joi.object({
-    email: joi.string().trim().lowercase().email().required(),
-})
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().trim().lowercase().email()
+    .required(),
+});
 
-const resetPasswordSchema = joi.object({
-    token: joi.string().trim().required(),
-    newPassword: passwordRule.required(),
-})
+const resetPasswordSchema = Joi.object({
+  token: Joi.string().trim().required(),
+  newPassword: passwordRule.required(),
+});
 
-const refreshTokenSchema = joi.object({
-    refreshToken: joi.string().trim().required(),
-})
+const refreshTokenSchema = Joi.object({
+  refreshToken: Joi.string().trim().required(),
+});
 
 module.exports = {
-    registerSchema,
-    loginSchema,
-    forgotPasswordSchema,
-    resetPasswordSchema,
-    refreshTokenSchema,
-}
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  refreshTokenSchema,
+};

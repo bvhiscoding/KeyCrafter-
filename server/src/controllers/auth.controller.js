@@ -21,8 +21,8 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const refreshToken = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.body;
-  const response = await authService.refreshAccessToken(refreshToken);
+  const { refreshToken: token } = req.body;
+  const response = await authService.refreshAccessToken(token);
 
   res
     .status(HTTP_STATUS.OK)

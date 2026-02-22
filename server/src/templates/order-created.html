@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <body style="font-family: Arial, sans-serif; color: #1f2937">
+    <h2>Your order has been created</h2>
+    <p>Hi {{userName}}, your order <strong>{{orderCode}}</strong> is now pending.</p>
+    <p>Order date: {{orderDate}}</p>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 12px">
+      <thead>
+        <tr>
+          <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd">Item</th>
+          <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd">Qty</th>
+          <th style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{orderItemsHtml}}
+      </tbody>
+    </table>
+    <p>Subtotal: {{subtotal}}</p>
+    <p>Shipping Fee: {{shippingFee}}</p>
+    <p>Discount: {{discount}}</p>
+    <p><strong>Total: {{total}}</strong></p>
+    <p>Payment Method: {{paymentMethod}}</p>
+    <p>Shipping Address: {{shippingAddress}}</p>
+    <p>Note: {{note}}</p>
+    <small>© {{year}} KeyCrafter</small>
+  </body>
+</html>

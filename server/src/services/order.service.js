@@ -1,3 +1,5 @@
+const User = require('../models/user.model');
+const emailService = require('./email.service');
 const Cart = require('../models/cart.model');
 const Order = require('../models/order.model');
 const Product = require('../models/product.model');
@@ -10,7 +12,10 @@ const calculateOrderTotal = (items, shippingFee = 0, discount = 0) => {
   const total = subtotal + shippingFee - discount;
 
   return {
-    subtotal, shippingFee, discount, total,
+    subtotal,
+    shippingFee,
+    discount,
+    total,
   };
 };
 
@@ -22,6 +27,7 @@ const createOrder = async (userId, orderData) => {
   if (!cart || cart.items.length === 0) {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Cart is empty');
   }
+
   const orderItems = [];
 
   cart.items.forEach((cartItem) => {
@@ -32,12 +38,14 @@ const createOrder = async (userId, orderData) => {
         `Product ${product ? product.name : 'Unknown'} is not available`,
       );
     }
+
     if (cartItem.quantity > product.stock) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
         `Insufficient stock for product: ${product.name}`,
       );
     }
+
     orderItems.push({
       product: product._id,
       name: product.name,
@@ -46,11 +54,13 @@ const createOrder = async (userId, orderData) => {
       quantity: cartItem.quantity,
     });
   });
+
   const totals = calculateOrderTotal(
     orderItems,
     orderData.shippingFee || 0,
     orderData.discount || 0,
   );
+
   const order = await Order.create({
     user: userId,
     items: orderItems,
@@ -61,9 +71,19 @@ const createOrder = async (userId, orderData) => {
     status: 'pending',
     paymentStatus: 'pending',
   });
-  // clear cart after successful order creation
+
   cart.items = [];
   await cart.save();
+
+  const user = await User.findById(userId).select('email name');
+  if (user?.email) {
+    try {
+      await emailService.sendOrderCreatedEmail({ user, order });
+    } catch (error) {
+      // ignore email error to avoid breaking order flow
+    }
+  }
+
   return order;
 };
 
@@ -72,13 +92,16 @@ const getOrders = async (userId, query) => {
   const limit = Number(query.limit) || 10;
   const skip = (page - 1) * limit;
   const filter = { user: userId };
+
   if (query.status) {
     filter.status = query.status;
   }
+
   const [items, total] = await Promise.all([
     Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
     Order.countDocuments(filter),
   ]);
+
   return {
     items,
     pagination: {
@@ -89,6 +112,7 @@ const getOrders = async (userId, query) => {
     },
   };
 };
+
 const getOrderById = async (userId, orderId) => {
   const order = await Order.findOne({ _id: orderId, user: userId }).populate({
     path: 'items.product',
@@ -97,6 +121,7 @@ const getOrderById = async (userId, orderId) => {
   if (!order) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Order not found');
   }
+
   return order;
 };
 
@@ -110,7 +135,7 @@ const deductStockForOrder = async (order) => {
         stock: { $gte: item.quantity },
       },
       { $inc: { stock: -item.quantity } },
-      { new: true },
+      { returnDocument: 'after' },
     )),
   );
 
@@ -139,14 +164,17 @@ const restoreStockForOrder = async (order) => {
     })),
   );
 };
+
 const updateOrderStatus = async (orderId, status, note) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Order not found');
   }
+
   if (order.status === status) {
     return order;
   }
+
   const allowedTransitions = OrderStatusTransitions[order.status] || [];
   if (!allowedTransitions.includes(status)) {
     throw new ApiError(
@@ -154,12 +182,15 @@ const updateOrderStatus = async (orderId, status, note) => {
       `Invalid status transition from ${order.status} to ${status}`,
     );
   }
+
   if (status === 'confirmed') {
     await deductStockForOrder(order);
   }
+
   if (status === 'cancelled' && ['confirmed', 'processing'].includes(order.status)) {
     await restoreStockForOrder(order);
   }
+
   if (status === 'delivered') {
     await Promise.all(
       order.items.map((item) => Product.findByIdAndUpdate(item.product, {
@@ -167,21 +198,44 @@ const updateOrderStatus = async (orderId, status, note) => {
       })),
     );
   }
+
   order.status = status;
   order.$locals.statusNote = note;
   await order.save();
   return order;
 };
+
 const cancelOrder = async (userId, orderId) => {
   const order = await Order.findOne({ _id: orderId, user: userId });
   if (!order) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Order not found');
   }
+
   if (order.status === 'cancelled') {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Order already cancelled');
   }
-  return updateOrderStatus(order._id, 'cancelled', 'Cancelled by customer');
+
+  const cancelledOrder = await updateOrderStatus(
+    order._id,
+    'cancelled',
+    'Cancelled by customer',
+  );
+
+  const user = await User.findById(userId).select('name email');
+  if (user?.email) {
+    try {
+      await emailService.sendOrderCancelledEmail({
+        user,
+        order: cancelledOrder,
+      });
+    } catch (error) {
+      // ignore email error to avoid breaking cancellation flow
+    }
+  }
+
+  return cancelledOrder;
 };
+
 module.exports = {
   createOrder,
   getOrders,

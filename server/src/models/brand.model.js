@@ -45,7 +45,7 @@ const brandSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 brandSchema.virtual('productCount', {
@@ -63,4 +63,5 @@ brandSchema.pre('save', function () {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
 });
+
 module.exports = mongoose.model('Brand', brandSchema);

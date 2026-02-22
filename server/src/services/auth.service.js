@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-
+const emailService = require('./email.service');
 const User = require('../models/user.model');
 const HTTP_STATUS = require('../constants/httpStatus');
 const { AUTH_MESSAGES } = require('../constants/messages');
@@ -33,7 +33,11 @@ const register = async (userData) => {
   const hashedRefreshToken = await bcrypt.hash(refreshToken, 12);
   user.refreshToken = hashedRefreshToken;
   await user.save({ validateBeforeSave: false });
-
+  try {
+    await emailService.sendWelcomeEmail({ email: user.email, name: user.name });
+  } catch (error) {
+    // ignore email error to avoid breaking register flow
+  }
   return {
     user: sanitizeUser(user),
     accessToken,
@@ -102,6 +106,17 @@ const forgotPassword = async (email) => {
   user.passwordResetToken = hashedResetToken;
   user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
+  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+  try {
+    await emailService.sendForgotPasswordEmail({
+      email: user.email,
+      name: user.name,
+      resetLink,
+      expiresMinutes: 15,
+    });
+  } catch (error) {
+    // ignore email error to avoid breaking forgot-password flow
+  }
   return { resetToken };
 };
 

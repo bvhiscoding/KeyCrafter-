@@ -1,4 +1,5 @@
 const express = require('express');
+
 const paymentController = require('../controllers/payment.controller');
 const validate = require('../middlewares/validation.middleware');
 const { protect } = require('../middlewares/auth.middleware');
@@ -10,6 +11,7 @@ router.post(
   '/stripe/create-session',
   protect,
   validate(createCheckoutSessionSchema),
-  paymentController.createCheckoutSession
+  paymentController.createCheckoutSession,
 );
+
 module.exports = router;

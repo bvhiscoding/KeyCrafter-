@@ -39,7 +39,7 @@ const createBrand = async (payload) => Brand.create(payload);
 
 const updateBrand = async (id, payload) => {
   const brand = await Brand.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!brand) {
@@ -51,7 +51,7 @@ const deleteBrand = async (id) => {
   const brand = await Brand.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true },
+    { returnDocument: 'after' },
   );
   if (!brand) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Brand not found');
   return brand;

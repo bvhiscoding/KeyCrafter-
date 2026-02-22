@@ -6,13 +6,16 @@ const morgan = require('morgan');
 const errorMiddleware = require('./middlewares/error.middleware');
 const routes = require('./routes');
 const paymentController = require('./controllers/payment.controller');
+
 const app = express();
+
 // Stripe webhook must use raw body
 app.post(
   '/api/payments/stripe/webhook',
   express.raw({ type: 'application/json' }),
-  paymentController.handleStripeWebhook
+  paymentController.handleStripeWebhook,
 );
+
 // Middleware
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
@@ -25,8 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
+
 // Routes
 app.use('/api', routes);
+
 // Error Handling Middleware
 app.use(errorMiddleware);
+
 module.exports = app;

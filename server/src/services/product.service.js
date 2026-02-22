@@ -103,7 +103,7 @@ const updateProduct = async (id, payload) => {
     }
   }
   const product = await Product.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!product) {
@@ -116,7 +116,7 @@ const deleteProduct = async (id) => {
   const product = await Product.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true },
+    { returnDocument: 'after' },
   );
   if (!product) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Product not found');

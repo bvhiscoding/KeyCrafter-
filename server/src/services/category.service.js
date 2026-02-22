@@ -39,7 +39,7 @@ const createCategory = async (payload) => Category.create(payload);
 
 const updateCategory = async (id, payload) => {
   const category = await Category.findOneAndUpdate({ _id: id, isDeleted: false }, payload, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!category) {
@@ -52,7 +52,7 @@ const deleteCategory = async (id) => {
   const category = await Category.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { new: true },
+    { returnDocument: 'after' },
   );
 
   if (!category) {

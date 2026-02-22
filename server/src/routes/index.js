@@ -8,6 +8,7 @@ const orderRoutes = require('./order.route');
 const paymentRoutes = require('./payment.route');
 const reviewRoutes = require('./review.route');
 const userRoutes = require('./user.route');
+const adminRoutes = require('./admin');
 
 const router = express.Router();
 router.use('/', reviewRoutes);
@@ -19,4 +20,6 @@ router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/users', userRoutes);
+router.use('/admin', adminRoutes);
+
 module.exports = router;

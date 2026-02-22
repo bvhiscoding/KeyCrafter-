@@ -7,6 +7,7 @@ const cartRoutes = require('./cart.route');
 const orderRoutes = require('./order.route');
 const paymentRoutes = require('./payment.route');
 const reviewRoutes = require('./review.route');
+const userRoutes = require('./user.route');
 
 const router = express.Router();
 router.use('/', reviewRoutes);
@@ -17,5 +18,5 @@ router.use('/products', productRoutes);
 router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
 router.use('/payments', paymentRoutes);
-
+router.use('/users', userRoutes);
 module.exports = router;

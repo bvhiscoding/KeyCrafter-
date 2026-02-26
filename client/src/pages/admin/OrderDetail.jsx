@@ -7,6 +7,7 @@ import Loader from "@/components/common/Loader";
 
 const STATUS_OPTIONS = [
   "pending",
+  "confirmed",
   "processing",
   "shipped",
   "delivered",
@@ -14,10 +15,20 @@ const STATUS_OPTIONS = [
 ];
 const STATUS_COLORS = {
   pending: "#ffcc00",
+  confirmed: "#ffa500",
   processing: "#00f5ff",
   shipped: "#d966ff",
   delivered: "#39ff14",
   cancelled: "#ff5555",
+};
+
+const OrderStatusTransitions = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["processing", "cancelled"],
+  processing: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: [],
 };
 
 const AdminOrderDetail = () => {
@@ -29,6 +40,11 @@ const AdminOrderDetail = () => {
 
   if (isLoading) return <Loader message="Loading order..." />;
   if (!order) return <p style={{ color: "#ff5555" }}>Order not found.</p>;
+
+  const allowedOptions = [
+    order.status,
+    ...(OrderStatusTransitions[order.status] || []),
+  ];
 
   const handleStatus = async (e) => {
     try {
@@ -75,7 +91,7 @@ const AdminOrderDetail = () => {
           <select
             value={order.status}
             onChange={handleStatus}
-            disabled={updating}
+            disabled={updating || allowedOptions.length <= 1}
             style={{
               background: "rgba(13,13,40,0.9)",
               border: `1px solid ${STATUS_COLORS[order.status] || "#8888aa"}55`,
@@ -87,15 +103,18 @@ const AdminOrderDetail = () => {
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.07em",
-              cursor: "pointer",
+              cursor: allowedOptions.length <= 1 ? "not-allowed" : "pointer",
               outline: "none",
+              opacity: allowedOptions.length <= 1 ? 0.7 : 1,
             }}
           >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {STATUS_OPTIONS.filter((s) => allowedOptions.includes(s)).map(
+              (s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ),
+            )}
           </select>
           <Link
             to="/admin/orders"
@@ -254,7 +273,7 @@ const AdminOrderDetail = () => {
               },
               {
                 l: "Total",
-                v: `${(order.totalAmount || 0).toLocaleString("vi-VN")} ₫`,
+                v: `${(order.total || 0).toLocaleString("vi-VN")} ₫`,
                 bold: true,
               },
             ].map((r) => (

@@ -35,14 +35,14 @@ const createOrder = async (userId, orderData) => {
     if (!product || !product.isActive || product.isDeleted) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
-        `Product ${product ? product.name : 'Unknown'} is not available`,
+        `Product ${product ? product.name : 'Unknown'} is not available`
       );
     }
 
     if (cartItem.quantity > product.stock) {
       throw new ApiError(
         HTTP_STATUS.BAD_REQUEST,
-        `Insufficient stock for product: ${product.name}`,
+        `Insufficient stock for product: ${product.name}`
       );
     }
 
@@ -58,7 +58,7 @@ const createOrder = async (userId, orderData) => {
   const totals = calculateOrderTotal(
     orderItems,
     orderData.shippingFee || 0,
-    orderData.discount || 0,
+    orderData.discount || 0
   );
 
   const order = await Order.create({
@@ -127,16 +127,18 @@ const getOrderById = async (userId, orderId) => {
 
 const deductStockForOrder = async (order) => {
   const updateResults = await Promise.all(
-    order.items.map((item) => Product.findOneAndUpdate(
-      {
-        _id: item.product,
-        isDeleted: false,
-        isActive: true,
-        stock: { $gte: item.quantity },
-      },
-      { $inc: { stock: -item.quantity } },
-      { returnDocument: 'after' },
-    )),
+    order.items.map((item) =>
+      Product.findOneAndUpdate(
+        {
+          _id: item.product,
+          isDeleted: false,
+          isActive: true,
+          stock: { $gte: item.quantity },
+        },
+        { $inc: { stock: -item.quantity } },
+        { returnDocument: 'after' }
+      )
+    )
   );
 
   const failedIndex = updateResults.findIndex((result) => !result);
@@ -145,23 +147,27 @@ const deductStockForOrder = async (order) => {
     const deductedItems = order.items.filter((_, index) => Boolean(updateResults[index]));
 
     await Promise.all(
-      deductedItems.map((item) => Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: item.quantity },
-      })),
+      deductedItems.map((item) =>
+        Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity },
+        })
+      )
     );
 
     throw new ApiError(
       HTTP_STATUS.BAD_REQUEST,
-      `Insufficient stock for order item: ${order.items[failedIndex].name}`,
+      `Insufficient stock for order item: ${order.items[failedIndex].name}`
     );
   }
 };
 
 const restoreStockForOrder = async (order) => {
   await Promise.all(
-    order.items.map((item) => Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: item.quantity },
-    })),
+    order.items.map((item) =>
+      Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity },
+      })
+    )
   );
 };
 
@@ -179,23 +185,35 @@ const updateOrderStatus = async (orderId, status, note) => {
   if (!allowedTransitions.includes(status)) {
     throw new ApiError(
       HTTP_STATUS.BAD_REQUEST,
-      `Invalid status transition from ${order.status} to ${status}`,
+      `Invalid status transition from ${order.status} to ${status}`
     );
   }
 
-  if (status === 'confirmed') {
+  const statesWithoutStock = ['pending', 'cancelled'];
+  const statesWithStock = ['confirmed', 'processing', 'shipped', 'delivered'];
+
+  const needsStockDeduction =
+    statesWithoutStock.includes(order.status) && statesWithStock.includes(status);
+  if (needsStockDeduction) {
     await deductStockForOrder(order);
   }
 
-  if (status === 'cancelled' && ['confirmed', 'processing'].includes(order.status)) {
+  const needsStockRestore =
+    statesWithStock.includes(order.status) && statesWithoutStock.includes(status);
+  if (needsStockRestore) {
     await restoreStockForOrder(order);
   }
 
   if (status === 'delivered') {
+    if (order.paymentStatus === 'pending') {
+      order.paymentStatus = 'paid';
+    }
     await Promise.all(
-      order.items.map((item) => Product.findByIdAndUpdate(item.product, {
-        $inc: { soldCount: item.quantity },
-      })),
+      order.items.map((item) =>
+        Product.findByIdAndUpdate(item.product, {
+          $inc: { soldCount: item.quantity },
+        })
+      )
     );
   }
 
@@ -215,11 +233,7 @@ const cancelOrder = async (userId, orderId) => {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Order already cancelled');
   }
 
-  const cancelledOrder = await updateOrderStatus(
-    order._id,
-    'cancelled',
-    'Cancelled by customer',
-  );
+  const cancelledOrder = await updateOrderStatus(order._id, 'cancelled', 'Cancelled by customer');
 
   const user = await User.findById(userId).select('name email');
   if (user?.email) {

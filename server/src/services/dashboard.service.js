@@ -24,7 +24,12 @@ const getDateFromPeriod = (period) => {
 const getOverviewStats = async () => {
   const [orderAgg, totalOrders, totalUsers, totalProducts] = await Promise.all([
     Order.aggregate([
-      { $match: { paymentStatus: 'paid' } },
+      {
+        $match: {
+          $or: [{ paymentStatus: 'paid' }, { status: 'delivered' }],
+          status: { $ne: 'cancelled' },
+        },
+      },
       {
         $group: {
           _id: null,
@@ -51,7 +56,11 @@ const getRevenueChart = async (period) => {
   const revenue = await Order.aggregate([
     {
       $match: {
-        paymentStatus: 'paid',
+        $or: [
+          { paymentStatus: 'paid' },
+          { status: 'delivered' }
+        ],
+        status: { $ne: 'cancelled' },
         createdAt: { $gte: dateFrom },
       },
     },
@@ -76,10 +85,11 @@ const getRevenueChart = async (period) => {
   }));
 };
 
-const getTopProducts = async (limit = 5) => Product.find({ isDeleted: false })
-  .select('name slug thumbnail soldCount avgRating price salePrice stock')
-  .sort({ soldCount: -1, avgRating: -1 })
-  .limit(Number(limit));
+const getTopProducts = async (limit = 5) =>
+  Product.find({ isDeleted: false })
+    .select('name slug thumbnail soldCount avgRating price salePrice stock')
+    .sort({ soldCount: -1, avgRating: -1 })
+    .limit(Number(limit));
 
 const getOrdersByStatus = async () => {
   const grouped = await Order.aggregate([
@@ -99,43 +109,42 @@ const getOrdersByStatus = async () => {
   return map;
 };
 
-const getRecentOrders = async (limit = 5) => Order.find()
-  .populate('user', 'name email')
-  .sort({ createdAt: -1 })
-  .limit(Number(limit));
+const getRecentOrders = async (limit = 5) =>
+  Order.find().populate('user', 'name email').sort({ createdAt: -1 }).limit(Number(limit));
 
-const getCategoryStats = async () => Category.aggregate([
-  { $match: { isDeleted: false } },
-  {
-    $lookup: {
-      from: 'products',
-      localField: '_id',
-      foreignField: 'category',
-      as: 'products',
+const getCategoryStats = async () =>
+  Category.aggregate([
+    { $match: { isDeleted: false } },
+    {
+      $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: 'category',
+        as: 'products',
+      },
     },
-  },
-  {
-    $project: {
-      name: 1,
-      slug: 1,
-      productCount: {
-        $size: {
-          $filter: {
-            input: '$products',
-            as: 'product',
-            cond: {
-              $and: [
-                { $eq: ['$$product.isDeleted', false] },
-                { $eq: ['$$product.isActive', true] },
-              ],
+    {
+      $project: {
+        name: 1,
+        slug: 1,
+        productCount: {
+          $size: {
+            $filter: {
+              input: '$products',
+              as: 'product',
+              cond: {
+                $and: [
+                  { $eq: ['$$product.isDeleted', false] },
+                  { $eq: ['$$product.isActive', true] },
+                ],
+              },
             },
           },
         },
       },
     },
-  },
-  { $sort: { productCount: -1 } },
-]);
+    { $sort: { productCount: -1 } },
+  ]);
 
 module.exports = {
   getOverviewStats,

@@ -90,8 +90,62 @@ const LogOutIcon = () => (
   </svg>
 );
 
+const ProfileIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const ListIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <line x1="8" y1="6" x2="21" y2="6" />
+    <line x1="8" y1="12" x2="21" y2="12" />
+    <line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" />
+    <line x1="3" y1="12" x2="3.01" y2="12" />
+    <line x1="3" y1="18" x2="3.01" y2="18" />
+  </svg>
+);
+
+const HeartIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
 const Header = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
 
@@ -159,22 +213,6 @@ const Header = () => {
           >
             Support
           </NavLink>
-          {isAdmin && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `nav-link${isActive ? " active" : ""}`
-              }
-              style={{
-                color: "#bf00ff",
-                gap: "0.3rem",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <ShieldIcon /> Admin
-            </NavLink>
-          )}
         </nav>
 
         {/* Search Bar - Expand on focus */}
@@ -274,18 +312,34 @@ const Header = () => {
           </Link>
 
           {isAuthenticated ? (
-            <div
-              ref={dropdownRef}
-              style={{ position: "relative" }}
-            >
+            <div ref={dropdownRef} style={{ position: "relative" }}>
               <button
                 className="button button-secondary"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                style={{ padding: "0.45rem 0.85rem", cursor: "pointer" }}
+                style={{
+                  padding: "0.45rem 0.85rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  color: isAdmin ? "#bf00ff" : "var(--color-neon-cyan)",
+                  borderColor: isAdmin
+                    ? "rgba(191,0,255,0.3)"
+                    : "rgba(0,245,255,0.3)",
+                }}
                 aria-label="User Menu"
                 aria-expanded={isDropdownOpen}
               >
                 <UserIcon />
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {user?.name || "User"}
+                </span>
               </button>
 
               {/* Dropdown Menu */}
@@ -320,10 +374,32 @@ const Header = () => {
                       textDecoration: "none",
                       transition: "background 0.2s",
                       borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
                     }}
                   >
-                    My Profile
+                    <ProfileIcon /> My Profile
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="dropdown-item"
+                      style={{
+                        padding: "0.75rem 1rem",
+                        color: "#bf00ff",
+                        fontSize: "0.85rem",
+                        textDecoration: "none",
+                        transition: "background 0.2s",
+                        borderBottom: "1px solid rgba(255,255,255,0.05)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <ShieldIcon /> Admin Panel
+                    </Link>
+                  )}
                   <Link
                     to="/orders"
                     className="dropdown-item"
@@ -334,9 +410,12 @@ const Header = () => {
                       textDecoration: "none",
                       transition: "background 0.2s",
                       borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
                     }}
                   >
-                    Orders
+                    <ListIcon /> Orders
                   </Link>
                   <Link
                     to="/wishlist"
@@ -348,9 +427,12 @@ const Header = () => {
                       textDecoration: "none",
                       transition: "background 0.2s",
                       borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
                     }}
                   >
-                    Wishlist
+                    <HeartIcon /> Wishlist
                   </Link>
                   <Link
                     to="/login"

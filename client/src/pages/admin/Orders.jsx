@@ -8,6 +8,7 @@ import Loader from "@/components/common/Loader";
 
 const STATUS_OPTIONS = [
   "pending",
+  "confirmed",
   "processing",
   "shipped",
   "delivered",
@@ -15,10 +16,20 @@ const STATUS_OPTIONS = [
 ];
 const STATUS_COLORS = {
   pending: "#ffcc00",
+  confirmed: "#ffa500",
   processing: "#00f5ff",
   shipped: "#d966ff",
   delivered: "#39ff14",
   cancelled: "#ff5555",
+};
+
+const OrderStatusTransitions = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["processing", "cancelled"],
+  processing: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  cancelled: [],
 };
 
 const ArrowIcon = () => (
@@ -42,6 +53,8 @@ const StatusSelect = ({ orderId, current }) => {
   const [updateStatus, { isLoading }] = useUpdateOrderStatusMutation();
   const [val, setVal] = useState(current);
 
+  const allowedOptions = [current, ...(OrderStatusTransitions[current] || [])];
+
   const handleChange = async (e) => {
     const status = e.target.value;
     setVal(status);
@@ -57,7 +70,7 @@ const StatusSelect = ({ orderId, current }) => {
     <select
       value={val}
       onChange={handleChange}
-      disabled={isLoading}
+      disabled={isLoading || allowedOptions.length <= 1}
       style={{
         background: "rgba(13,13,40,0.9)",
         border: `1px solid ${STATUS_COLORS[val] || "#8888aa"}44`,
@@ -69,11 +82,12 @@ const StatusSelect = ({ orderId, current }) => {
         fontWeight: 700,
         textTransform: "uppercase",
         letterSpacing: "0.06em",
-        cursor: "pointer",
+        cursor: allowedOptions.length <= 1 ? "not-allowed" : "pointer",
         outline: "none",
+        opacity: allowedOptions.length <= 1 ? 0.7 : 1,
       }}
     >
-      {STATUS_OPTIONS.map((s) => (
+      {STATUS_OPTIONS.filter((s) => allowedOptions.includes(s)).map((s) => (
         <option key={s} value={s}>
           {s}
         </option>
@@ -85,7 +99,7 @@ const StatusSelect = ({ orderId, current }) => {
 const AdminOrders = () => {
   const [filter, setFilter] = useState("");
   const { data, isLoading } = useGetAdminOrdersQuery(
-    filter ? { status: filter } : {}
+    filter ? { status: filter } : {},
   );
   const orders = data?.data?.items ?? data?.data ?? data?.orders ?? [];
 
@@ -257,7 +271,7 @@ const AdminOrders = () => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {(order.totalAmount || 0).toLocaleString("vi-VN")} ₫
+                      {(order.total || 0).toLocaleString("vi-VN")} ₫
                     </td>
                     <td style={{ padding: "0.75rem 1rem" }}>
                       <StatusSelect

@@ -1,12 +1,24 @@
-import { baseApi } from '@/lib/baseApi';
+import { baseApi } from "@/lib/baseApi";
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardStats: builder.query({
-      query: () => '/admin/dashboard/stats',
-      providesTags: ['Admin'],
+      query: () => "/admin/dashboard/stats",
+      providesTags: ["Admin"],
+    }),
+    getRevenueChart: builder.query({
+      query: () => "/admin/dashboard/revenue-chart",
+      providesTags: ["Admin"],
+    }),
+    getTopProducts: builder.query({
+      query: () => "/admin/dashboard/top-products",
+      providesTags: ["Admin"],
     }),
   }),
 });
 
-export const { useGetDashboardStatsQuery } = dashboardApi;
+export const {
+  useGetDashboardStatsQuery,
+  useGetRevenueChartQuery,
+  useGetTopProductsQuery,
+} = dashboardApi;

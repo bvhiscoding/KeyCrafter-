@@ -115,7 +115,7 @@ const OrderDetail = () => {
   const currentStep = STEPS.indexOf(order.status);
 
   return (
-    <section style={{ maxWidth: "780px" }}>
+    <section style={{ maxWidth: "900px", margin: "0 auto" }}>
       {/* Back link */}
       <Link
         to="/orders"
@@ -328,14 +328,14 @@ const OrderDetail = () => {
 
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto",
+          display: "flex",
+          flexWrap: "wrap",
           gap: "1.25rem",
-          alignItems: "start",
+          alignItems: "flex-start",
         }}
       >
         {/* Items */}
-        <div className="glass-card" style={{ padding: "1.5rem" }}>
+        <div className="glass-card" style={{ padding: "1.5rem", flex: "1 1 500px" }}>
           <h3
             style={{
               fontFamily: "var(--font-display)",
@@ -414,7 +414,7 @@ const OrderDetail = () => {
         </div>
 
         {/* Summary */}
-        <div style={{ minWidth: "200px" }}>
+        <div style={{ flex: "1 1 300px", minWidth: "250px" }}>
           <div className="glass-card" style={{ padding: "1.25rem" }}>
             <h3
               style={{

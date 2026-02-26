@@ -21,7 +21,10 @@ const HelpIcon = () => (
 const SupportPage = () => (
   <div style={{ paddingTop: 0 }}>
     {/* ═══ HERO ═══ */}
-    <section className="hero" style={{ padding: "4rem 0 3rem" }}>
+    <section
+      className="hero"
+      style={{ padding: "4rem 0 3rem", minHeight: "auto" }}
+    >
       <div className="hero-bg-glow hero-bg-glow-1" aria-hidden="true" />
       <div
         className="container"

@@ -106,7 +106,7 @@ const Support = () => {
   return (
     <div style={{ paddingTop: 0 }}>
       {/* ═══ HERO ═══ */}
-      <section className="hero" style={{ padding: "4rem 0 3rem" }}>
+      <section className="hero" style={{ padding: "4rem 0 3rem", minHeight: "auto" }}>
         <div className="hero-bg-glow hero-bg-glow-1" aria-hidden="true" />
         <div
           className="container"
@@ -300,15 +300,14 @@ const Support = () => {
                 >
                   Shipping Information
                 </h2>
-                <p style={{ color: "var(--color-text-muted)" }}>
-                  We ship globally with tracked services to ensure your gear
-                  arrives safely.
+                <p style={{ color: "var(--color-text-muted)", lineHeight: 1.6 }}>
+                  Our warehouse operates Monday through Friday. We take pride in securely packaging your mechanical keyboards, delicate switches, and premium keycaps to ensure they reach you safely. Once your order leaves our facility, you will receive an automated email with tracking information.
                 </p>
 
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
                     gap: "2rem",
                     marginTop: "1.5rem",
                   }}
@@ -338,18 +337,18 @@ const Support = () => {
                       style={{
                         color: "var(--color-text-muted)",
                         display: "grid",
-                        gap: "0.5rem",
+                        gap: "0.75rem",
                         paddingLeft: "1.5rem",
                         lineHeight: 1.6,
                       }}
                     >
-                      <li>Standard: 3-5 business days</li>
-                      <li>Express: 1-2 business days</li>
+                      <li><strong>Standard (USPS/UPS):</strong> 3-5 business days. Best for components and accessories.</li>
+                      <li><strong>Expedited (FedEx/UPS 2-Day):</strong> 1-2 business days. Ideal for heavy barebones kits.</li>
                       <li>
-                        <strong style={{ color: "#bf00ff" }}>
-                          Free shipping
+                        <strong style={{ color: "var(--color-neon-cyan)" }}>
+                          Free standard shipping
                         </strong>{" "}
-                        on orders over $99
+                        on domestic orders over $99.
                       </li>
                     </ul>
                   </div>
@@ -379,16 +378,31 @@ const Support = () => {
                       style={{
                         color: "var(--color-text-muted)",
                         display: "grid",
-                        gap: "0.5rem",
+                        gap: "0.75rem",
                         paddingLeft: "1.5rem",
                         lineHeight: 1.6,
                       }}
                     >
-                      <li>Economy: 10-15 business days</li>
-                      <li>Priority: 5-7 business days</li>
-                      <li>Customs duties may apply based on your region</li>
+                      <li><strong>Economy:</strong> 10-21 business days. Tracking details might be limited outside the US.</li>
+                      <li><strong>Priority (DHL/FedEx):</strong> 5-7 business days. Fully tracked from warehouse to your door.</li>
+                      <li><strong>Customs & Duties:</strong> Import taxes and duties are the buyer's responsibility and are not included in the checkout price.</li>
                     </ul>
                   </div>
+                </div>
+
+                <div
+                  style={{
+                    padding: "1.5rem",
+                    background: "rgba(0,245,255,0.05)",
+                    borderLeft: "4px solid var(--color-neon-cyan)",
+                    borderRadius: "8px",
+                    marginTop: "1rem"
+                  }}
+                >
+                  <h4 style={{ color: "#fff", marginBottom: "0.5rem" }}>Order Processing Times</h4>
+                  <p style={{ color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                    In-stock items typically ship within <strong>1-2 business days</strong>. Group Buy (GB) and pre-order items will have estimated shipping dates listed on their specific product pages. If your order contains both in-stock and pre-order items, it will ship once all items become available.
+                  </p>
                 </div>
               </div>
             )}
@@ -407,7 +421,7 @@ const Support = () => {
                 </h2>
                 <div
                   style={{
-                    padding: "2rem",
+                    padding: "2.5rem",
                     background: "rgba(13,13,40,0.5)",
                     borderRadius: "12px",
                     borderLeft: "4px solid #bf00ff",
@@ -418,47 +432,65 @@ const Support = () => {
                     style={{
                       color: "#fff",
                       marginBottom: "1rem",
-                      fontSize: "1.2rem",
+                      fontSize: "1.4rem",
                     }}
                   >
-                    30-Day Money-Back Guarantee
+                    30-Day Return Policy
                   </h3>
                   <p
                     style={{
                       color: "var(--color-text-muted)",
                       lineHeight: 1.6,
-                      marginBottom: "1rem",
+                      marginBottom: "1.5rem",
                     }}
                   >
-                    If you are not entirely satisfied with your purchase, simply
-                    return the item within 30 days with your receipt. Returned
-                    items must be in the original packaging, untouched, and in
-                    the same condition that you received them.
+                    We want you to love your keyboard. If you are not entirely satisfied with your purchase, you have <strong>30 days from the date of delivery</strong> to initiate a return. To be eligible, items must be in their original, factory-sealed condition. Keyboards must not have been modified, opened, or altered.
                   </p>
+
+                  <h4 style={{ color: "var(--color-neon-cyan)", marginBottom: "0.75rem", fontSize: "1.1rem" }}>
+                    How to Initiate a Return:
+                  </h4>
+                  <ol
+                    style={{
+                      color: "var(--color-text-muted)",
+                      paddingLeft: "1.2rem",
+                      marginBottom: "2rem",
+                      gap: "0.6rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      lineHeight: 1.6
+                    }}
+                  >
+                    <li>Submit a ticket through our Contact form with your Order ID and reason for return.</li>
+                    <li>Our team will review your request and issue a Return Merchandise Authorization (RMA) number.</li>
+                    <li>Securely pack the items and ship them back using a tracked carrier.</li>
+                    <li>Refunds are processed within 3-5 business days after we inspect the returned items.</li>
+                  </ol>
+
                   <h4
                     style={{
-                      color: "var(--color-neon-cyan)",
-                      marginBottom: "0.5rem",
+                      color: "#ff5555",
+                      marginBottom: "0.75rem",
+                      fontSize: "1.1rem"
                     }}
                   >
-                    Exceptions:
+                    Exceptions & Important Notes:
                   </h4>
                   <ul
                     style={{
                       color: "var(--color-text-dim)",
                       paddingLeft: "1.5rem",
                       listStyleType: "circle",
-                      gap: "0.5rem",
+                      gap: "0.6rem",
                       display: "flex",
                       flexDirection: "column",
+                      lineHeight: 1.6
                     }}
                   >
-                    <li>Lubed switches cannot be returned.</li>
-                    <li>
-                      Group Buy items are final sale unless damaged upon
-                      arrival.
-                    </li>
-                    <li>Shipping costs are non-refundable.</li>
+                    <li><strong>Lubed or modified switches:</strong> Cannot be returned under any circumstance.</li>
+                    <li><strong>Group Buy (GB) Items:</strong> All Group Buy and pre-order sales are final unless the product arrives defective.</li>
+                    <li><strong>Restocking Fee:</strong> A 15% restocking fee may apply for items that have been opened but are otherwise accepted for return.</li>
+                    <li><strong>Shipping Costs:</strong> Original shipping charges are non-refundable, and customers are responsible for return shipping out-of-pocket unless the specific reason for return involves our error.</li>
                   </ul>
                 </div>
               </div>

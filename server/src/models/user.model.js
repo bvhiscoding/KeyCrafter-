@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       trim: true,
-      match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number'],
+      match: [/^\+?[0-9]{8,15}$/, 'Please use a valid phone number'],
     },
     avatar: {
       type: String,
@@ -80,7 +80,7 @@ const userSchema = new mongoose.Schema(
           type: String,
           trim: true,
           required: [true, 'Phone number is required'],
-          match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number'],
+          match: [/^\+?[0-9]{8,15}$/, 'Please use a valid phone number'],
         },
         isDefault: {
           type: Boolean,

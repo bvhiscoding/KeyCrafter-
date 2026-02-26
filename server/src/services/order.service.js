@@ -78,9 +78,25 @@ const createOrder = async (userId, orderData) => {
   const user = await User.findById(userId).select('email name');
   if (user?.email) {
     try {
-      await emailService.sendOrderCreatedEmail({ user, order });
+      const emailResult = await emailService.sendOrderCreatedEmail({ user, order });
+      if (emailResult.status !== 'sent') {
+        console.warn('[Email] Order created email was not sent', {
+          orderId: String(order._id),
+          orderCode: order.orderCode,
+          userId: String(userId),
+          email: user.email,
+          status: emailResult.status,
+          reason: emailResult.reason || emailResult.error,
+        });
+      }
     } catch (error) {
-      // ignore email error to avoid breaking order flow
+      console.error('[Email] Order created email failed with exception', {
+        orderId: String(order._id),
+        orderCode: order.orderCode,
+        userId: String(userId),
+        email: user.email,
+        error: error.message,
+      });
     }
   }
 
@@ -238,12 +254,28 @@ const cancelOrder = async (userId, orderId) => {
   const user = await User.findById(userId).select('name email');
   if (user?.email) {
     try {
-      await emailService.sendOrderCancelledEmail({
+      const emailResult = await emailService.sendOrderCancelledEmail({
         user,
         order: cancelledOrder,
       });
+      if (emailResult.status !== 'sent') {
+        console.warn('[Email] Order cancelled email was not sent', {
+          orderId: String(cancelledOrder._id),
+          orderCode: cancelledOrder.orderCode,
+          userId: String(userId),
+          email: user.email,
+          status: emailResult.status,
+          reason: emailResult.reason || emailResult.error,
+        });
+      }
     } catch (error) {
-      // ignore email error to avoid breaking cancellation flow
+      console.error('[Email] Order cancelled email failed with exception', {
+        orderId: String(cancelledOrder._id),
+        orderCode: cancelledOrder.orderCode,
+        userId: String(userId),
+        email: user.email,
+        error: error.message,
+      });
     }
   }
 

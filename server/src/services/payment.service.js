@@ -113,9 +113,25 @@ const processSuccessfulPayment = async (session) => {
     const user = await User.findById(order.user).select('name email');
     if (user?.email) {
       try {
-        await emailService.sendPaymentSuccessEmail({ user, order });
+        const emailResult = await emailService.sendPaymentSuccessEmail({ user, order });
+        if (emailResult.status !== 'sent') {
+          console.warn('[Email] Payment success email was not sent', {
+            orderId: String(order._id),
+            orderCode: order.orderCode,
+            userId: String(order.user),
+            email: user.email,
+            status: emailResult.status,
+            reason: emailResult.reason || emailResult.error,
+          });
+        }
       } catch (error) {
-        // ignore email error to avoid breaking webhook flow
+        console.error('[Email] Payment success email failed with exception', {
+          orderId: String(order._id),
+          orderCode: order.orderCode,
+          userId: String(order.user),
+          email: user.email,
+          error: error.message,
+        });
       }
     }
   }

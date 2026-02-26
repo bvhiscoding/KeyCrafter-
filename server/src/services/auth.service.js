@@ -34,9 +34,24 @@ const register = async (userData) => {
   user.refreshToken = hashedRefreshToken;
   await user.save({ validateBeforeSave: false });
   try {
-    await emailService.sendWelcomeEmail({ email: user.email, name: user.name });
+    const emailResult = await emailService.sendWelcomeEmail({
+      email: user.email,
+      name: user.name,
+    });
+    if (emailResult.status !== 'sent') {
+      console.warn('[Email] Welcome email was not sent', {
+        userId: String(user._id),
+        email: user.email,
+        status: emailResult.status,
+        reason: emailResult.reason || emailResult.error,
+      });
+    }
   } catch (error) {
-    // ignore email error to avoid breaking register flow
+    console.error('[Email] Welcome email failed with exception', {
+      userId: String(user._id),
+      email: user.email,
+      error: error.message,
+    });
   }
   return {
     user: sanitizeUser(user),
@@ -108,14 +123,26 @@ const forgotPassword = async (email) => {
   await user.save({ validateBeforeSave: false });
   const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
   try {
-    await emailService.sendForgotPasswordEmail({
+    const emailResult = await emailService.sendForgotPasswordEmail({
       email: user.email,
       name: user.name,
       resetLink,
       expiresMinutes: 15,
     });
+    if (emailResult.status !== 'sent') {
+      console.warn('[Email] Forgot password email was not sent', {
+        userId: String(user._id),
+        email: user.email,
+        status: emailResult.status,
+        reason: emailResult.reason || emailResult.error,
+      });
+    }
   } catch (error) {
-    // ignore email error to avoid breaking forgot-password flow
+    console.error('[Email] Forgot password email failed with exception', {
+      userId: String(user._id),
+      email: user.email,
+      error: error.message,
+    });
   }
   return { resetToken };
 };

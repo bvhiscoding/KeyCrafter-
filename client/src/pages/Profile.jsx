@@ -5,6 +5,7 @@ import {
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useAddAddressMutation,
+  useUpdateAddressMutation,
   useDeleteAddressMutation,
 } from '@/features/user/userApi';
 import Loader from '@/components/common/Loader';
@@ -35,6 +36,11 @@ const PlusIcon = () => (
     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 );
+const EditIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+);
 
 /* ── Helpers ──────────────────────────────────────────────── */
 const Label = ({ children, htmlFor }) => (
@@ -55,6 +61,14 @@ const Input = (props) => (
 const GlassCard = ({ children, style = {} }) => (
   <div className="glass-card" style={{ padding:'1.75rem', ...style }}>{children}</div>
 );
+
+const getErrorMsg = (err, defaultMsg) => {
+  if (err?.data?.details && Array.isArray(err.data.details) && err.data.details.length > 0) {
+    const rawMsg = err.data.details.join(', ').replace(/"/g, '');
+    return rawMsg.charAt(0).toUpperCase() + rawMsg.slice(1);
+  }
+  return err?.data?.message || defaultMsg;
+};
 
 const SectionTitle = ({ icon, children }) => (
   <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', marginBottom:'1.5rem' }}>
@@ -91,6 +105,7 @@ const Profile = () => {
   const [updateProfile] = useUpdateProfileMutation();
   const [changePassword] = useChangePasswordMutation();
   const [addAddress] = useAddAddressMutation();
+  const [updateAddress] = useUpdateAddressMutation();
   const [deleteAddress] = useDeleteAddressMutation();
 
   /* -- info form state */
@@ -108,9 +123,14 @@ const Profile = () => {
   const [pwLoading, setPwLoading] = useState(false);
 
   /* -- address form state */
-  const [addrStreet, setAddrStreet] = useState('');
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [addrLabel, setAddrLabel] = useState('home');
+  const [addrName, setAddrName] = useState('');
+  const [addrPhone, setAddrPhone] = useState('');
+  const [addrAddress, setAddrAddress] = useState('');
+  const [addrWard, setAddrWard] = useState('');
+  const [addrDistrict, setAddrDistrict] = useState('');
   const [addrCity, setAddrCity] = useState('');
-  const [addrZip, setAddrZip] = useState('');
   const [addrMsg, setAddrMsg] = useState(null);
   const [addrLoading, setAddrLoading] = useState(false);
 
@@ -124,7 +144,7 @@ const Profile = () => {
       await updateProfile({ name: name || profile.name, phone: phone || profile.phone }).unwrap();
       setInfoMsg({ type:'success', text:'Profile updated successfully!' });
     } catch (err) {
-      setInfoMsg({ type:'error', text: err?.data?.message || 'Update failed.' });
+      setInfoMsg({ type:'error', text: getErrorMsg(err, 'Update failed.') });
     } finally { setInfoLoading(false); }
   };
 
@@ -138,7 +158,7 @@ const Profile = () => {
       setPwMsg({ type:'success', text:'Password changed successfully!' });
       setOldPw(''); setNewPw(''); setConfirmPw('');
     } catch (err) {
-      setPwMsg({ type:'error', text: err?.data?.message || 'Password change failed.' });
+      setPwMsg({ type:'error', text: getErrorMsg(err, 'Password change failed.') });
     } finally { setPwLoading(false); }
   };
 
@@ -146,12 +166,50 @@ const Profile = () => {
     e.preventDefault();
     setAddrLoading(true); setAddrMsg(null);
     try {
-      await addAddress({ street: addrStreet, city: addrCity, zipCode: addrZip }).unwrap();
-      setAddrMsg({ type:'success', text:'Address added!' });
-      setAddrStreet(''); setAddrCity(''); setAddrZip('');
+      const payload = { 
+        label: addrLabel,
+        name: addrName,
+        phone: addrPhone.replace(/\s+/g, ''),
+        address: addrAddress,
+        ward: addrWard,
+        district: addrDistrict,
+        city: addrCity
+      };
+      
+      if (editingAddressId) {
+        await updateAddress({ id: editingAddressId, ...payload }).unwrap();
+        setAddrMsg({ type:'success', text:'Address updated successfully!' });
+      } else {
+        await addAddress(payload).unwrap();
+        setAddrMsg({ type:'success', text:'Address added!' });
+      }
+
+      setEditingAddressId(null);
+      setAddrName(''); setAddrPhone(''); setAddrAddress('');
+      setAddrWard(''); setAddrDistrict(''); setAddrCity('');
     } catch (err) {
-      setAddrMsg({ type:'error', text: err?.data?.message || 'Failed to add address.' });
+      setAddrMsg({ type:'error', text: getErrorMsg(err, editingAddressId ? 'Failed to update address.' : 'Failed to add address.') });
     } finally { setAddrLoading(false); }
+  };
+
+  const handleEditClick = (addr) => {
+    setEditingAddressId(addr._id);
+    setAddrLabel(addr.label || 'home');
+    setAddrName(addr.name || '');
+    setAddrPhone(addr.phone || '');
+    setAddrAddress(addr.address || '');
+    setAddrWard(addr.ward || '');
+    setAddrDistrict(addr.district || '');
+    setAddrCity(addr.city || '');
+    document.getElementById('address-form-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAddressId(null);
+    setAddrLabel('home');
+    setAddrName(''); setAddrPhone(''); setAddrAddress('');
+    setAddrWard(''); setAddrDistrict(''); setAddrCity('');
+    setAddrMsg(null);
   };
 
   const handleDeleteAddress = async (id) => {
@@ -272,40 +330,90 @@ const Profile = () => {
                 {addresses.map((addr) => (
                   <div key={addr._id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'0.85rem 1rem', background:'rgba(0,245,255,0.05)', border:'1px solid rgba(0,245,255,0.12)', borderRadius:'8px' }}>
                     <div>
-                      <p style={{ color:'var(--color-text)', fontSize:'0.88rem', fontWeight:600 }}>{addr.street}</p>
-                      <p style={{ color:'var(--color-text-muted)', fontSize:'0.78rem' }}>{addr.city} {addr.zipCode}</p>
+                      <p style={{ color:'var(--color-text)', fontSize:'0.88rem', fontWeight:600 }}>
+                        <span style={{ 
+                          marginRight: '0.4rem', 
+                          padding: '0.1rem 0.4rem', 
+                          background: 'rgba(0,245,255,0.1)', 
+                          color: 'var(--color-neon-cyan)', 
+                          borderRadius: '4px', 
+                          fontSize: '0.65rem', 
+                          textTransform: 'uppercase' 
+                        }}>
+                          {addr.label}
+                        </span>
+                        {addr.name} - {addr.phone}
+                      </p>
+                      <p style={{ color:'var(--color-text-muted)', fontSize:'0.78rem', marginTop: '0.2rem' }}>{addr.address}</p>
+                      <p style={{ color:'var(--color-text-muted)', fontSize:'0.78rem' }}>{addr.ward}, {addr.district}, {addr.city}</p>
                     </div>
-                    <button type="button" onClick={() => handleDeleteAddress(addr._id)} style={{ background:'rgba(255,50,50,0.12)', border:'1px solid rgba(255,50,50,0.25)', color:'#ff5555', borderRadius:'7px', padding:'0.4rem 0.6rem', cursor:'pointer', display:'flex', alignItems:'center', gap:'0.3rem', fontSize:'0.75rem', fontFamily:'var(--font-display)', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em' }}>
-                      <TrashIcon /> Remove
-                    </button>
+                    <div style={{ display:'flex', gap:'0.5rem' }}>
+                      <button type="button" onClick={() => handleEditClick(addr)} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#fff', borderRadius:'7px', padding:'0.4rem 0.6rem', cursor:'pointer', display:'flex', alignItems:'center', gap:'0.3rem', fontSize:'0.75rem', fontFamily:'var(--font-display)', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em' }}>
+                        <EditIcon /> Edit
+                      </button>
+                      <button type="button" onClick={() => handleDeleteAddress(addr._id)} style={{ background:'rgba(255,50,50,0.12)', border:'1px solid rgba(255,50,50,0.25)', color:'#ff5555', borderRadius:'7px', padding:'0.4rem 0.6rem', cursor:'pointer', display:'flex', alignItems:'center', gap:'0.3rem', fontSize:'0.75rem', fontFamily:'var(--font-display)', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em' }}>
+                        <TrashIcon /> Remove
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </GlassCard>
           )}
 
-          {/* Add address form */}
-          <GlassCard>
-            <SectionTitle icon={<PlusIcon />}>Add New Address</SectionTitle>
+          {/* Add/Edit address form */}
+          <GlassCard style={{ scrollMarginTop: '20px' }} id="address-form-section">
+            <SectionTitle icon={editingAddressId ? <EditIcon /> : <PlusIcon />}>
+              {editingAddressId ? 'Edit Address' : 'Add New Address'}
+            </SectionTitle>
             <form onSubmit={handleAddAddress} style={{ display:'grid', gap:'1rem' }}>
-              <div>
-                <Label htmlFor="addr-street">Street Address</Label>
-                <Input id="addr-street" type="text" value={addrStreet} onChange={e => setAddrStreet(e.target.value)} placeholder="123 District 1, Nguyen Hue Street" required />
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:'0.75rem' }}>
+                <div>
+                  <Label htmlFor="addr-label">Label</Label>
+                  <select id="addr-label" value={addrLabel} onChange={e => setAddrLabel(e.target.value)} style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(0,245,255,0.15)', borderRadius:'8px', padding:'0.6rem 0.85rem', color:'var(--color-text)', fontSize:'0.88rem', outline:'none' }}>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="addr-name">Recipient Name</Label>
+                  <Input id="addr-name" type="text" value={addrName} onChange={e => setAddrName(e.target.value)} placeholder="John Doe" required />
+                </div>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
+              <div>
+                <Label htmlFor="addr-phone">Phone Number</Label>
+                <Input id="addr-phone" type="tel" value={addrPhone} onChange={e => setAddrPhone(e.target.value)} placeholder="0912345678" required />
+              </div>
+              <div>
+                <Label htmlFor="addr-address">Street Address</Label>
+                <Input id="addr-address" type="text" value={addrAddress} onChange={e => setAddrAddress(e.target.value)} placeholder="123 Nguyen Hue Street" required />
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'0.75rem' }}>
+                <div>
+                  <Label htmlFor="addr-ward">Ward</Label>
+                  <Input id="addr-ward" type="text" value={addrWard} onChange={e => setAddrWard(e.target.value)} placeholder="Ben Nghe Ward" required />
+                </div>
+                <div>
+                  <Label htmlFor="addr-district">District</Label>
+                  <Input id="addr-district" type="text" value={addrDistrict} onChange={e => setAddrDistrict(e.target.value)} placeholder="District 1" required />
+                </div>
                 <div>
                   <Label htmlFor="addr-city">City</Label>
                   <Input id="addr-city" type="text" value={addrCity} onChange={e => setAddrCity(e.target.value)} placeholder="Ho Chi Minh City" required />
                 </div>
-                <div>
-                  <Label htmlFor="addr-zip">Zip Code</Label>
-                  <Input id="addr-zip" type="text" value={addrZip} onChange={e => setAddrZip(e.target.value)} placeholder="70000" />
-                </div>
               </div>
               <Alert type={addrMsg?.type} msg={addrMsg?.text} />
-              <button type="submit" className="button button-secondary" disabled={addrLoading} style={{ padding:'0.7rem', justifyContent:'center', display:'flex', alignItems:'center', gap:'0.4rem' }}>
-                {addrLoading ? 'Adding...' : <><PlusIcon /> Add Address</>}
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="submit" className="button button-secondary" disabled={addrLoading} style={{ flex: 1, padding:'0.7rem', justifyContent:'center', display:'flex', alignItems:'center', gap:'0.4rem' }}>
+                  {addrLoading ? (editingAddressId ? 'Updating...' : 'Adding...') : (editingAddressId ? <><EditIcon /> Save Changes</> : <><PlusIcon /> Add Address</>)}
+                </button>
+                {editingAddressId && (
+                  <button type="button" onClick={handleCancelEdit} style={{ flex: 1, padding:'0.7rem', justifyContent:'center', background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', borderRadius:'8px', cursor:'pointer', fontFamily:'var(--font-display)', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em' }}>
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </GlassCard>
         </div>

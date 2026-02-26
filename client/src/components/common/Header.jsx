@@ -3,6 +3,10 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import useAuth from "@/hooks/useAuth";
 import useCart from "@/hooks/useCart";
+import { useAppDispatch } from "@/app/hooks";
+import { logout as logoutAction } from "@/features/auth/authSlice";
+import { useLogoutMutation } from "@/features/auth/authApi";
+import { baseApi } from "@/lib/baseApi";
 
 const CartIcon = () => (
   <svg
@@ -148,6 +152,8 @@ const Header = () => {
   const { isAuthenticated, isAdmin, user } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [logoutApi] = useLogoutMutation();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -169,6 +175,17 @@ const Header = () => {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
     }
+  };
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+      await logoutApi().unwrap();
+    } catch (error) {}
+    dispatch(logoutAction());
+    dispatch(baseApi.util.resetApiState());
+    setIsDropdownOpen(false);
+    navigate("/login");
   };
 
   return (
@@ -434,8 +451,8 @@ const Header = () => {
                   >
                     <HeartIcon /> Wishlist
                   </Link>
-                  <Link
-                    to="/login"
+                  <button
+                    onClick={handleLogout}
                     className="dropdown-item"
                     style={{
                       padding: "0.75rem 1rem",
@@ -446,10 +463,16 @@ const Header = () => {
                       display: "flex",
                       alignItems: "center",
                       gap: "0.5rem",
+                      background: "transparent",
+                      border: "none",
+                      width: "100%",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-display)",
                     }}
                   >
                     <LogOutIcon /> Logout
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>

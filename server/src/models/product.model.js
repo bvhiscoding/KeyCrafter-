@@ -18,7 +18,6 @@ const productSchema = new mongoose.Schema(
     description: {
       type: String,
       maxlength: [1000, 'Description must be less than 1000 characters'],
-      required: [true, 'Product description is required'],
     },
     shortDescription: {
       type: String,
@@ -62,7 +61,7 @@ const productSchema = new mongoose.Schema(
     ],
     thumbnail: {
       type: String,
-      required: [true, 'Product thumbnail is required'],
+      default: null,
     },
     soundTestUrl: {
       type: String,

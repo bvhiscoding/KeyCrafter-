@@ -38,8 +38,8 @@ const Login = () => {
     try {
       const response = await loginApi({ email, password }).unwrap();
       
-      const { user, accessToken } = response.data;
-      dispatch(setCredentials({ token: accessToken, user }));
+      const { user, accessToken, refreshToken } = response.data;
+      dispatch(setCredentials({ token: accessToken, refreshToken, user }));
       navigate(location.state?.from || "/");
     } catch (error) {
       console.error("Login Error:", error);
@@ -182,36 +182,6 @@ const Login = () => {
             Register now
           </Link>
         </p>
-
-        {/* Demo hint */}
-        <div
-          style={{
-            marginTop: "1.25rem",
-            padding: "0.85rem 1rem",
-            background: "rgba(191,0,255,0.08)",
-            border: "1px solid rgba(191,0,255,0.2)",
-            borderRadius: "8px",
-          }}
-        >
-          <p
-            style={{
-              color: "var(--color-text-muted)",
-              fontSize: "0.78rem",
-              lineHeight: 1.6,
-            }}
-          >
-            <span
-              style={{
-                color: "#bf00ff",
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-              }}
-            >
-              DEMO:{" "}
-            </span>
-            Use any email with "admin" for admin access.
-          </p>
-        </div>
       </div>
     </div>
   );

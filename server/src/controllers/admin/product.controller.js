@@ -22,21 +22,18 @@ const createProduct = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   const response = await adminProductService.updateProduct(req.params.id, req.body);
 
-  res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, response, 'Product updated'));
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Product updated'));
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
   const response = await adminProductService.deleteProduct(req.params.id);
 
-  res
-    .status(HTTP_STATUS.OK)
-    .json(new ApiResponse(HTTP_STATUS.OK, response, 'Product deleted'));
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Product deleted'));
 });
 
 const uploadProductImages = asyncHandler(async (req, res) => {
-  const response = await adminProductService.uploadProductImages(req.params.id, req.body);
+  // req.file is populated by multer
+  const response = await adminProductService.uploadProductImages(req.params.id, req.file);
 
   res
     .status(HTTP_STATUS.OK)

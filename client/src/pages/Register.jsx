@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/app/hooks";
+import { useRegisterMutation } from "@/features/auth/authApi";
+import { setCredentials } from "@/features/auth/authSlice";
 
 const UserPlusIcon = () => (
   <svg
@@ -22,17 +25,52 @@ const UserPlusIcon = () => (
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const [registerApi, { isLoading }] = useRegisterMutation();
 
   const onChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    alert("Register demo success. Connect API in auth sprint.");
-    setLoading(false);
+    setErrorMsg("");
+
+    try {
+      // Execute registration
+      const response = await registerApi({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      }).unwrap();
+
+      // Backend returns { user, accessToken, refreshToken } in res.data
+      const { user, accessToken } = response.data || response;
+
+      // Auto-login the user
+      dispatch(setCredentials({ token: accessToken, user }));
+
+      // Redirect to home/dashboard
+      navigate("/");
+    } catch (error) {
+      console.error("Register Error:", error);
+
+      // Attempt to extract the error message from the backend response
+      let message = "Registration failed. Please try again.";
+      if (error?.data?.message) {
+        message = error.data.message;
+        // Check for joi validation mapping
+        if (typeof message === "object" && message["string.pattern.base"]) {
+          message = message["string.pattern.base"];
+        } else if (typeof message === "object") {
+          message = Object.values(message).join(", ");
+        }
+      }
+
+      setErrorMsg(message);
+    }
   };
 
   return (
@@ -72,6 +110,27 @@ const Register = () => {
             Join the KeyCrafter community
           </p>
         </div>
+
+        {/* Error message box */}
+        {errorMsg && (
+          <div
+            style={{
+              marginBottom: "1rem",
+              padding: "0.8rem",
+              background: "rgba(255,50,50,0.1)",
+              border: "1px solid rgba(255,50,50,0.3)",
+              borderRadius: "8px",
+              color: "#ff5555",
+              fontSize: "0.85rem",
+              lineHeight: 1.5,
+            }}
+          >
+            <strong style={{ display: "block", marginBottom: "0.2rem" }}>
+              Error:
+            </strong>
+            {errorMsg}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={onSubmit} style={{ display: "grid", gap: "1rem" }}>
@@ -150,10 +209,22 @@ const Register = () => {
               name="password"
               value={form.password}
               onChange={onChange}
-              placeholder="Min 8 characters"
+              placeholder="••••••••"
               required
               autoComplete="new-password"
             />
+            <p
+              style={{
+                marginTop: "0.4rem",
+                fontSize: "0.75rem",
+                color: "var(--color-text-dim)",
+                lineHeight: 1.4,
+              }}
+            >
+              * Password must be at least 8 characters and include{" "}
+              <strong>1 uppercase</strong>, <strong>1 lowercase</strong>, and{" "}
+              <strong>1 number</strong>.
+            </p>
           </div>
 
           <button
@@ -166,10 +237,10 @@ const Register = () => {
               background: "linear-gradient(135deg, #bf00ff, #7b00cc)",
               boxShadow: "0 0 20px rgba(191,0,255,0.4)",
             }}
-            disabled={loading}
-            aria-busy={loading}
+            disabled={isLoading}
+            aria-busy={isLoading}
           >
-            {loading ? "Creating Account..." : "Create Account →"}
+            {isLoading ? "Creating Account..." : "Create Account →"}
           </button>
         </form>
 

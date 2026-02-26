@@ -18,7 +18,7 @@ const brandSchema = new mongoose.Schema(
     },
     logo: {
       type: String,
-      required: [true, 'Brand logo is required'],
+      default: null,
     },
     description: {
       type: String,
@@ -45,7 +45,7 @@ const brandSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
+  }
 );
 
 brandSchema.virtual('productCount', {

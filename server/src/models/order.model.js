@@ -84,7 +84,7 @@ const orderSchema = new mongoose.Schema(
         type: String,
         trim: true,
         required: [true, 'Phone number is required'],
-        match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number'],
+        match: [/^\+?[0-9]{8,15}$/, 'Please use a valid phone number'],
       },
       address: {
         type: String,
@@ -143,7 +143,7 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
+  }
 );
 
 orderSchema.index({ user: 1 }, { createdAt: -1 });

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import ProductGrid from "@/components/product/ProductGrid";
-import { mockProducts } from "@/lib/mockData";
+import { useGetProductsQuery } from "@/features/products/productsApi";
 
 /* ─── SVG ICONS ─── */
 const ChevronLeftIcon = () => (
@@ -1049,6 +1049,10 @@ const FeaturesBar = () => (
 
 /* ─── MAIN HOME PAGE ─── */
 const Home = () => {
+  const { data: apiData, isLoading } = useGetProductsQuery({ limit: 6 });
+  const raw = apiData?.data?.items ?? apiData?.data ?? apiData?.products;
+  const products = Array.isArray(raw) ? raw.slice(0, 6) : [];
+
   return (
     <div style={{ paddingTop: 0 }}>
       {/* ═══ HERO ═══ */}
@@ -1234,7 +1238,19 @@ const Home = () => {
               View All →
             </Link>
           </div>
-          <ProductGrid products={mockProducts.slice(0, 6)} />
+          {isLoading ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "2rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              Loading products...
+            </div>
+          ) : (
+            <ProductGrid products={products} />
+          )}
         </div>
       </section>
 

@@ -1,23 +1,35 @@
 import { Navigate, useParams } from "react-router-dom";
 
 import useCart from "@/hooks/useCart";
-import { mockProducts } from "@/lib/mockData";
+import { useGetProductDetailQuery } from "@/features/products/productsApi";
+import Loader from "@/components/common/Loader";
 
 const ProductDetail = () => {
   const { slug } = useParams();
   const { addItem } = useCart();
 
-  const product = mockProducts.find((item) => item.slug === slug);
+  const { data: apiData, isLoading, isError } = useGetProductDetailQuery(slug);
+  const product = apiData?.data || apiData;
 
-  if (!product) {
+  if (isLoading) {
+    return <Loader message="Loading product..." />;
+  }
+
+  if (isError || !product) {
     return <Navigate to="/not-found" replace />;
   }
 
+  // Support both image and thumbnail property
+  const imageUrl =
+    product.thumbnail || (product.images && product.images[0]) || product.image;
+
   return (
     <section className="product-detail card">
-      <img src={product.image} alt={product.name} className="detail-image" />
+      {imageUrl && (
+        <img src={imageUrl} alt={product.name} className="detail-image" />
+      )}
       <div className="stack-md">
-        <p className="badge">{product.brand}</p>
+        <p className="badge">{product.brand?.name || product.brand}</p>
         <h1>{product.name}</h1>
         <p className="muted">{product.shortDescription}</p>
         <p>

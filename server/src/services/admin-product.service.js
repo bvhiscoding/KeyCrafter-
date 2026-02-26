@@ -119,7 +119,7 @@ const deleteProduct = async (id) => {
   const product = await Product.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, isActive: false },
-    { returnDocument: 'after' },
+    { returnDocument: 'after' }
   );
 
   if (!product) {
@@ -129,21 +129,22 @@ const deleteProduct = async (id) => {
   return product;
 };
 
-const uploadProductImages = async (id, payload) => {
+const uploadProductImages = async (id, file) => {
   const product = await Product.findOne({ _id: id, isDeleted: false });
   if (!product) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Product not found');
   }
 
-  const images = payload.images || [];
-  const thumbnail = payload.thumbnail || images[0] || product.thumbnail;
-
-  if (!thumbnail) {
-    throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'Thumbnail is required');
+  if (!file) {
+    throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'No image file provided');
   }
 
-  product.images = images;
-  product.thumbnail = thumbnail;
+  // Build public URL: /uploads/filename
+  const imageUrl = `/uploads/${file.filename}`;
+
+  // Push to images array, set as thumbnail if none yet
+  product.images = [...(product.images || []), imageUrl];
+  product.thumbnail = product.thumbnail || imageUrl;
   await product.save();
 
   return product;

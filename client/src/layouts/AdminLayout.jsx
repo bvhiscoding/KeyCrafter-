@@ -1,16 +1,5 @@
-import { Outlet } from 'react-router-dom';
-
-import Sidebar from '@/components/admin/Sidebar';
-
-const AdminLayout = () => {
-  return (
-    <div className="admin-layout">
-      <Sidebar />
-      <section className="admin-content">
-        <Outlet />
-      </section>
-    </div>
-  );
-};
-
-export default AdminLayout;
+/**
+ * @deprecated Use @/modules/admin/layout/AdminLayout instead.
+ * This file is kept for backward compatibility.
+ */
+export { default } from "@/modules/admin/layout/AdminLayout";

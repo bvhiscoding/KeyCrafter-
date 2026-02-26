@@ -45,11 +45,14 @@ const TrashIcon = () => (
 );
 
 const CartItem = ({ item, onChangeQuantity, onRemove }) => {
+  const imageUrl =
+    item.thumbnail || (item.images && item.images[0]) || item.image;
+
   return (
     <article className="cart-item" aria-label={item.name}>
       {/* Image */}
-      {item.image ? (
-        <img src={item.image} alt={item.name} className="cart-image" />
+      {imageUrl ? (
+        <img src={imageUrl} alt={item.name} className="cart-image" />
       ) : (
         <div
           className="cart-image"

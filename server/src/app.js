@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -13,7 +14,7 @@ const app = express();
 app.post(
   '/api/payments/stripe/webhook',
   express.raw({ type: 'application/json' }),
-  paymentController.handleStripeWebhook,
+  paymentController.handleStripeWebhook
 );
 
 // Middleware
@@ -23,6 +24,9 @@ app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded images
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {

@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const createBrandSchema = Joi.object({
   name: Joi.string().trim().max(100).required(),
-  logo: Joi.string().uri().trim().required(),
+  logo: Joi.string().uri().trim().allow('', null).optional(),
   description: Joi.string().trim().max(500).allow('', null),
   country: Joi.string().trim().max(100).allow('', null),
   website: Joi.string().uri().allow('', null),
@@ -10,7 +10,7 @@ const createBrandSchema = Joi.object({
 });
 const updateBrandSchema = Joi.object({
   name: Joi.string().trim().max(100),
-  logo: Joi.string().uri(),
+  logo: Joi.string().uri().allow('', null),
   description: Joi.string().trim().max(500).allow('', null),
   country: Joi.string().trim().max(100).allow('', null),
   website: Joi.string().uri().allow('', null),
@@ -19,8 +19,7 @@ const updateBrandSchema = Joi.object({
 
 const brandListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(50)
-    .default(10),
+  limit: Joi.number().integer().min(1).max(50).default(10),
   search: Joi.string().trim().allow(''),
   isActive: Joi.boolean(),
 });

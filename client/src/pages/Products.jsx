@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 
 import ProductGrid from "@/components/product/ProductGrid";
 import EmptyState from "@/components/common/EmptyState";
+import Loader from "@/components/common/Loader";
 import useDebounce from "@/hooks/useDebounce";
-import { mockProducts } from "@/lib/mockData";
+import { useGetProductsQuery } from "@/features/products/productsApi";
 
 const SearchIcon = () => (
   <svg
@@ -29,27 +30,51 @@ const Products = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const debouncedKeyword = useDebounce(keyword, 300);
 
-  const filteredProducts = useMemo(() => {
-    let result = mockProducts;
+  const { data: apiData, isLoading } = useGetProductsQuery({ limit: 100 });
+  const allProducts =
+    apiData?.data?.items ?? apiData?.data ?? apiData?.products ?? [];
 
-    if (activeCategory !== "All") {
-      result = result.filter((p) =>
-        p.category?.toLowerCase().includes(activeCategory.toLowerCase()),
-      );
+  const filteredProducts = useMemo(() => {
+    let result = allProducts ?? [];
+
+    // helper: lấy category text (string) từ nhiều dạng dữ liệu
+    const getCategoryText = (p) => {
+      const c = p?.category;
+
+      // category là string: "keycap"
+      if (typeof c === "string") return c;
+
+      // category là object: { name: "keycap" } hoặc { title: "keycap" } (fallback)
+      if (c && typeof c === "object") return c.name ?? c.title ?? "";
+
+      return "";
+    };
+
+    // helper: normalize text
+    const norm = (v) => (typeof v === "string" ? v.trim().toLowerCase() : "");
+
+    if (activeCategory && activeCategory !== "All") {
+      const ac = norm(activeCategory);
+      result = result.filter((p) => norm(getCategoryText(p)).includes(ac));
     }
 
-    const normalized = debouncedKeyword.trim().toLowerCase();
+    const normalized = norm(debouncedKeyword);
     if (normalized) {
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(normalized) ||
-          p.brand.toLowerCase().includes(normalized) ||
-          p.category.toLowerCase().includes(normalized),
-      );
+      result = result.filter((p) => {
+        const name = norm(p?.name);
+        const brand = norm(p?.brand);
+        const category = norm(getCategoryText(p));
+
+        return (
+          name.includes(normalized) ||
+          brand.includes(normalized) ||
+          category.includes(normalized)
+        );
+      });
     }
 
     return result;
-  }, [debouncedKeyword, activeCategory]);
+  }, [debouncedKeyword, activeCategory, allProducts]);
 
   return (
     <section className="stack-lg">
@@ -133,7 +158,9 @@ const Products = () => {
       </div>
 
       {/* Grid */}
-      {filteredProducts.length > 0 ? (
+      {isLoading ? (
+        <Loader message="Loading products..." />
+      ) : filteredProducts.length > 0 ? (
         <ProductGrid products={filteredProducts} />
       ) : (
         <EmptyState

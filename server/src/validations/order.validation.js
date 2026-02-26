@@ -2,12 +2,11 @@ const Joi = require('joi');
 
 const createOrderSchema = Joi.object({
   shippingAddress: Joi.object({
-    name: Joi.string().trim().required().min(2)
-      .max(100),
+    name: Joi.string().trim().required().min(2).max(100),
     phone: Joi.string()
       .trim()
       .required()
-      .pattern(/^\+?[1-9]\d{1,14}$/),
+      .pattern(/^\+?[0-9]{8,15}$/),
     address: Joi.string().trim().required().max(200),
     ward: Joi.string().trim().required().max(100),
     district: Joi.string().trim().required().max(100),
@@ -28,15 +27,14 @@ const updateStatusSchema = Joi.object({
 });
 const orderQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(50)
-    .default(10),
+  limit: Joi.number().integer().min(1).max(50).default(10),
   status: Joi.string().valid(
     'pending',
     'confirmed',
     'processing',
     'shipped',
     'delivered',
-    'cancelled',
+    'cancelled'
   ),
 });
 module.exports = {

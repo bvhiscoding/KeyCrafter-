@@ -288,17 +288,12 @@ const KeyboardHero3D = () => {
 
 /* ─── GAME SHOWCASE CAROUSEL ─── */
 const games = [
-  { name: "VALORANT", genre: "TACTICAL SHOOTER", color: "#ff4655", img: "VAL" },
-  { name: "CS2", genre: "FPS", color: "#ff8c00", img: "CS2" },
-  {
-    name: "APEX LEGENDS",
-    genre: "BATTLE ROYALE",
-    color: "#cd3333",
-    img: "APX",
-  },
-  { name: "STARCRAFT II", genre: "STRATEGY", color: "#0080ff", img: "STC" },
-  { name: "DOTA 2", genre: "MOBA", color: "#c23b22", img: "DOT" },
-  { name: "CYBERPUNK 2077", genre: "RPG", color: "#fcee09", img: "CP7" },
+  { name: "VALORANT", genre: "TACTICAL SHOOTER", color: "#ff4655", img: "/valorant-logo.png" },
+  { name: "CS2", genre: "FPS", color: "#ff8c00", img: "/cs2-logo.jpg" },
+  { name: "APEX LEGENDS", genre: "BATTLE ROYALE", color: "#cd3333", img: "/apex-legend-logo.jpg" },
+  { name: "STARCRAFT II", genre: "STRATEGY", color: "#0080ff", img: "/star-craft-2-logo.jpg" },
+  { name: "DOTA 2", genre: "MOBA", color: "#c23b22", img: "/dota-2-logo.png" },
+  { name: "CYBERPUNK 2077", genre: "RPG", color: "#fcee09", img: "/cyberpunk-2077-logo.jpg" },
 ];
 
 const GameCarousel = () => {
@@ -381,28 +376,30 @@ const GameCarousel = () => {
               transition: "all 0.4s",
             }}
           >
-            {/* Game "logo" placeholder */}
+            {/* Game Logo */}
             <div
               style={{
                 width: "120px",
                 height: "120px",
                 borderRadius: "16px",
-                background: `linear-gradient(135deg, ${game.color}33 0%, ${game.color}11 100%)`,
+                background: `radial-gradient(circle, ${game.color}33 0%, transparent 80%)`,
                 border: `2px solid ${game.color}66`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "2rem",
-                fontFamily: "var(--font-display)",
-                fontWeight: 900,
-                color: game.color,
-                textShadow: `0 0 20px ${game.color}`,
                 boxShadow: `0 0 30px ${game.color}33`,
                 transition: "all 0.4s",
+                overflow: "hidden"
               }}
               aria-label={game.name}
             >
-              {game.img}
+              <img 
+                src={game.img} 
+                alt={game.name} 
+                style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease-in-out" }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              />
             </div>
             <div>
               <div

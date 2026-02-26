@@ -93,27 +93,30 @@ const GameCarousel = () => {
               transition: "all 0.4s",
             }}
           >
+            {/* Game Logo */}
             <div
               style={{
                 width: "120px",
                 height: "120px",
                 borderRadius: "16px",
-                background: `linear-gradient(135deg, ${game.color}33 0%, ${game.color}11 100%)`,
+                background: `radial-gradient(circle, ${game.color}33 0%, transparent 80%)`,
                 border: `2px solid ${game.color}66`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "2rem",
-                fontFamily: "var(--font-display)",
-                fontWeight: 900,
-                color: game.color,
-                textShadow: `0 0 20px ${game.color}`,
                 boxShadow: `0 0 30px ${game.color}33`,
                 transition: "all 0.4s",
+                overflow: "hidden"
               }}
               aria-label={game.name}
             >
-              {game.img}
+              <img 
+                src={game.img} 
+                alt={game.name} 
+                style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease-in-out" }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              />
             </div>
             <div>
               <div

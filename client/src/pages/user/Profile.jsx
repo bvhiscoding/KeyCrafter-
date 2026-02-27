@@ -151,10 +151,14 @@ const Profile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPw !== confirmPw) { setPwMsg({ type:'error', text:'Passwords do not match.' }); return; }
-    if (newPw.length < 6) { setPwMsg({ type:'error', text:'Password must be at least 6 characters.' }); return; }
+    if (newPw.length < 8) { setPwMsg({ type:'error', text:'Password must be at least 8 characters.' }); return; }
     setPwLoading(true); setPwMsg(null);
     try {
-      await changePassword({ currentPassword: oldPw, newPassword: newPw }).unwrap();
+      await changePassword({
+        currentPassword: oldPw,
+        newPassword: newPw,
+        confirmPassword: confirmPw,
+      }).unwrap();
       setPwMsg({ type:'success', text:'Password changed successfully!' });
       setOldPw(''); setNewPw(''); setConfirmPw('');
     } catch (err) {

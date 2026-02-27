@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useResetPasswordMutation } from "@/features/auth/authApi";
 
@@ -54,8 +54,9 @@ const FieldLabel = ({ children, htmlFor }) => (
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { token: tokenFromPath } = useParams();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const token = searchParams.get("token") || tokenFromPath;
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -67,8 +68,13 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    const isStrongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$/.test(
+      password,
+    );
+    if (!isStrongPassword) {
+      setError(
+        "Password must be 8-30 chars and include uppercase, lowercase, and a number.",
+      );
       return;
     }
     if (password !== confirm) {
@@ -76,12 +82,14 @@ const ResetPassword = () => {
       return;
     }
     try {
-      await resetPassword({ token, password }).unwrap();
+      await resetPassword({ token, newPassword: password }).unwrap();
       setDone(true);
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       setError(
-        err?.data?.message || "Reset failed. The link may have expired.",
+        err?.data?.details?.[0] ||
+          err?.data?.message ||
+          "Reset failed. The link may have expired.",
       );
     }
   };

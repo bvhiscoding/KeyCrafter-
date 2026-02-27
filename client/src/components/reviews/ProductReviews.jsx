@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import {
   useGetProductReviewsQuery,
   useCreateReviewMutation,
+  useUpdateReviewMutation,
   useDeleteReviewMutation,
 } from "@/features/reviews/reviewsApi";
 import { API_BASE_URL } from "@/lib/constants";
@@ -20,7 +21,6 @@ const resolveImageUrl = (src) => {
   const origin = API_BASE_URL.replace("/api", "");
   return `${origin}${src.startsWith("/") ? "" : "/"}${src}`;
 };
-
 
 /* ═══════════════════════════════════════════════════════════════
    HELPERS
@@ -80,7 +80,9 @@ const LightboxPortal = ({ images, startIndex, onClose }) => {
 
   // Close on Escape key
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    const handler = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", handler);
     // Prevent body scroll while open
     document.body.style.overflow = "hidden";
@@ -129,7 +131,14 @@ const LightboxPortal = ({ images, startIndex, onClose }) => {
 
       {/* Thumbnail strip */}
       {images.length > 1 && (
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.5rem",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           {images.map((src, i) => (
             <button
               key={i}
@@ -152,7 +161,12 @@ const LightboxPortal = ({ images, startIndex, onClose }) => {
               <img
                 src={resolveImageUrl(src)}
                 alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
               />
             </button>
           ))}
@@ -260,8 +274,12 @@ const LightboxPortal = ({ images, startIndex, onClose }) => {
           zIndex: 100000,
           transition: "background 0.2s",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.2)")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.background = "rgba(255,255,255,0.2)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+        }
         aria-label="Close photo viewer"
       >
         ×
@@ -285,7 +303,14 @@ const ImageGallery = ({ images }) => {
 
   return (
     <>
-      <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.45rem",
+          flexWrap: "wrap",
+          marginTop: "0.5rem",
+        }}
+      >
         {visible.map((src, i) => (
           <button
             key={i}
@@ -316,8 +341,15 @@ const ImageGallery = ({ images }) => {
             <img
               src={resolveImageUrl(src)}
               alt={`Review photo ${i + 1}`}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              onError={(e) => { e.target.style.display = "none"; }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
             />
           </button>
         ))}
@@ -397,7 +429,13 @@ const ImageUploadPicker = ({ previews, onAdd, onRemove, uploading }) => {
         }}
       >
         Photos{" "}
-        <span style={{ fontSize: "0.68rem", textTransform: "none", letterSpacing: 0 }}>
+        <span
+          style={{
+            fontSize: "0.68rem",
+            textTransform: "none",
+            letterSpacing: 0,
+          }}
+        >
           (max 3, 5 MB each)
         </span>
       </label>
@@ -507,7 +545,13 @@ const ImageUploadPicker = ({ previews, onAdd, onRemove, uploading }) => {
                   <circle cx="8.5" cy="8.5" r="1.5" />
                   <polyline points="21 15 16 10 5 21" />
                 </svg>
-                <span style={{ fontSize: "0.6rem", fontFamily: "var(--font-display)", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                  }}
+                >
                   ADD
                 </span>
               </>
@@ -532,16 +576,28 @@ const ImageUploadPicker = ({ previews, onAdd, onRemove, uploading }) => {
 /* ═══════════════════════════════════════════════════════════════
    REVIEW FORM
 ═══════════════════════════════════════════════════════════════ */
-const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [imagePreviews, setImagePreviews] = useState([]); // local blob URLs
-  const [uploadedUrls, setUploadedUrls] = useState([]); // server URLs after upload
+const ReviewForm = ({
+  productId,
+  orderId,
+  isEdit = false,
+  reviewId = null,
+  initialData = null,
+  onClose,
+  onSuccess,
+}) => {
+  const [rating, setRating] = useState(initialData?.rating || 5);
+  const [comment, setComment] = useState(initialData?.comment || "");
+  const [imagePreviews, setImagePreviews] = useState(
+    initialData?.images?.map(resolveImageUrl) || [],
+  ); // local blob URLs
+  const [uploadedUrls, setUploadedUrls] = useState(initialData?.images || []); // server URLs after upload
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
   const token = useSelector((s) => s.auth?.token);
-  const [createReview, { isLoading: submitting }] = useCreateReviewMutation();
+  const [createReview, { isLoading: creating }] = useCreateReviewMutation();
+  const [updateReview, { isLoading: updating }] = useUpdateReviewMutation();
+  const submitting = creating || updating;
 
   /* ── Handle file selection → upload immediately ── */
   const handleFileChange = async (e) => {
@@ -567,7 +623,7 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
-        }
+        },
       );
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Upload failed");
@@ -595,15 +651,26 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
     e.preventDefault();
     setError(null);
     try {
-      await createReview({
-        productId,
-        rating,
-        comment,
-        orderId,
-        images: uploadedUrls,
-      }).unwrap();
+      if (isEdit) {
+        await updateReview({
+          id: reviewId,
+          rating,
+          comment,
+          images: uploadedUrls,
+        }).unwrap();
+      } else {
+        await createReview({
+          productId,
+          rating,
+          comment,
+          orderId,
+          images: uploadedUrls,
+        }).unwrap();
+      }
       // cleanup blob URLs
-      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      imagePreviews.forEach((url) => {
+        if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+      });
       onSuccess?.();
       onClose?.();
     } catch (err) {
@@ -634,7 +701,7 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
           margin: 0,
         }}
       >
-        Write a Review
+        {isEdit ? "Edit Review" : "Write a Review"}
       </h4>
 
       {/* Rating */}
@@ -739,7 +806,9 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
       )}
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+      <div
+        style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}
+      >
         {onClose && (
           <button
             type="button"
@@ -780,7 +849,15 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
             transition: "all 0.2s",
           }}
         >
-          {submitting ? "Submitting…" : uploading ? "Uploading…" : "Submit Review"}
+          {submitting
+            ? isEdit
+              ? "Saving…"
+              : "Submitting…"
+            : uploading
+              ? "Uploading…"
+              : isEdit
+                ? "Save Changes"
+                : "Submit Review"}
         </button>
       </div>
     </form>
@@ -793,6 +870,7 @@ const ReviewForm = ({ productId, orderId, onClose, onSuccess }) => {
 const ReviewCard = ({ review, currentUserId }) => {
   const [deleteReview, { isLoading: deleting }] = useDeleteReviewMutation();
   const isOwner = currentUserId && review.user?._id === currentUserId;
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleDelete = async () => {
     if (!window.confirm("Delete this review?")) return;
@@ -802,6 +880,31 @@ const ReviewCard = ({ review, currentUserId }) => {
       /* silent */
     }
   };
+
+  if (isEditing) {
+    return (
+      <div
+        style={{
+          padding: "1rem",
+          background: "rgba(0,0,0,0.2)",
+          borderRadius: "10px",
+          border: "1px solid rgba(0,245,255,0.15)",
+        }}
+      >
+        <ReviewForm
+          isEdit={true}
+          reviewId={review._id}
+          initialData={{
+            rating: review.rating,
+            comment: review.comment,
+            images: review.images,
+          }}
+          onClose={() => setIsEditing(false)}
+          onSuccess={() => setIsEditing(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -867,7 +970,11 @@ const ReviewCard = ({ review, currentUserId }) => {
               {review.user?.name || "User"}
             </p>
             <p
-              style={{ fontSize: "0.7rem", color: "var(--color-text-dim)", margin: 0 }}
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--color-text-dim)",
+                margin: 0,
+              }}
             >
               {new Date(review.createdAt).toLocaleDateString("vi-VN", {
                 year: "numeric",
@@ -892,26 +999,47 @@ const ReviewCard = ({ review, currentUserId }) => {
             {review.rating}.0
           </span>
           {isOwner && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deleting}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "#ff5555",
-                cursor: "pointer",
-                fontSize: "0.72rem",
-                padding: "0.2rem 0.4rem",
-                borderRadius: "4px",
-                fontFamily: "var(--font-display)",
-                fontWeight: 600,
-                opacity: deleting ? 0.5 : 1,
-              }}
-              title="Delete your review"
-            >
-              {deleting ? "…" : "Delete"}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                disabled={deleting}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--color-neon-cyan)",
+                  cursor: "pointer",
+                  fontSize: "0.72rem",
+                  padding: "0.2rem 0.4rem",
+                  borderRadius: "4px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 600,
+                }}
+                title="Edit your review"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#ff5555",
+                  cursor: "pointer",
+                  fontSize: "0.72rem",
+                  padding: "0.2rem 0.4rem",
+                  borderRadius: "4px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 600,
+                  opacity: deleting ? 0.5 : 1,
+                }}
+                title="Delete your review"
+              >
+                {deleting ? "…" : "Delete"}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -942,7 +1070,7 @@ const ProductReviews = ({ productId, orderId, canReview = false }) => {
 
   const { data, isLoading, isFetching } = useGetProductReviewsQuery(
     { productId, limit: 20 },
-    { skip: !productId }
+    { skip: !productId },
   );
   const currentUser = useSelector((s) => s.auth?.user);
 
@@ -951,7 +1079,9 @@ const ProductReviews = ({ productId, orderId, canReview = false }) => {
     data?.data?.pagination?.total ?? data?.pagination?.total ?? reviews.length;
   const avg =
     reviews.length > 0
-      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+      ? (
+          reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+        ).toFixed(1)
       : null;
 
   const userAlreadyReviewed =
@@ -993,10 +1123,21 @@ const ProductReviews = ({ productId, orderId, canReview = false }) => {
               }}
             >
               <StarRating value={parseFloat(avg)} />
-              <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#ffd700" }}>
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "#ffd700",
+                }}
+              >
                 {avg}
               </span>
-              <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
                 ({total} {total === 1 ? "review" : "reviews"})
               </span>
             </div>

@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import useCart from "@/hooks/useCart";
@@ -45,6 +45,7 @@ const StarRatingDisplay = ({ value }) => {
 
 const ProductDetail = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { addItem } = useCart();
   const currentUser = useSelector((s) => s.auth?.user);
 
@@ -83,7 +84,50 @@ const ProductDetail = () => {
     product.thumbnail || (product.images && product.images[0]) || product.image;
 
   return (
-    <div style={{ maxWidth: "960px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "960px", margin: "0 auto", paddingBottom: "2rem" }}>
+      {/* Breadcrumb Path & Back Button */}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", gap: "1rem" }}>
+        <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+          <Link to="/" style={{ color: "inherit", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "var(--color-neon-cyan)"} onMouseLeave={(e) => e.target.style.color = "inherit"}>Home</Link>
+          <span style={{ margin: "0 0.5rem", opacity: 0.5 }}>/</span>
+          <Link to="/products" style={{ color: "inherit", textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "var(--color-neon-cyan)"} onMouseLeave={(e) => e.target.style.color = "inherit"}>Products</Link>
+          <span style={{ margin: "0 0.5rem", opacity: 0.5 }}>/</span>
+          {product.category && (
+            <>
+              <span style={{ color: "inherit" }}>{product.category?.name || product.category}</span>
+              <span style={{ margin: "0 0.5rem", opacity: 0.5 }}>/</span>
+            </>
+          )}
+          <span style={{ color: "var(--color-text)", fontWeight: 500 }}>{product.name}</span>
+        </div>
+
+        <button 
+          onClick={() => navigate("/products")}
+          style={{ 
+            background: "transparent", 
+            border: "1px solid rgba(0,245,255,0.3)", 
+            borderRadius: "8px",
+            color: "var(--color-neon-cyan)", 
+            cursor: "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "0.5rem", 
+            padding: "0.5rem 1rem",
+            fontFamily: "var(--font-display)", 
+            fontWeight: 600,
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,245,255,0.1)"; e.currentTarget.style.borderColor = "rgba(0,245,255,0.6)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(0,245,255,0.3)"; }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back to Products
+        </button>
+      </div>
+
       {/* Product card */}
       <section className="product-detail card">
         {imageUrl && (

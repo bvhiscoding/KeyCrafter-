@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ProductGrid from "@/components/product/ProductGrid";
 import EmptyState from "@/components/common/EmptyState";
 import Loader from "@/components/common/Loader";
 import useDebounce from "@/hooks/useDebounce";
 import { useGetProductsQuery } from "@/features/products/productsApi";
+import { useGetCategoriesQuery } from "@/features/catalog/catalogApi";
 
 const SearchIcon = () => (
   <svg
@@ -23,16 +24,55 @@ const SearchIcon = () => (
   </svg>
 );
 
-const categories = ["All", "Keyboard", "Switch", "Keycap", "Accessory"];
-
 const Products = () => {
   const [keyword, setKeyword] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const debouncedKeyword = useDebounce(keyword, 300);
 
   const { data: apiData, isLoading } = useGetProductsQuery({ limit: 100 });
-  const allProducts =
-    apiData?.data?.items ?? apiData?.data ?? apiData?.products ?? [];
+  const { data: categoriesData } = useGetCategoriesQuery({ limit: 50 });
+  const extractArray = (payload, keys = []) => {
+    for (const key of keys) {
+      const value = key
+        .split(".")
+        .reduce((acc, part) => (acc == null ? acc : acc[part]), payload);
+      if (Array.isArray(value)) return value;
+    }
+    return [];
+  };
+
+  const allProducts = extractArray(apiData, [
+    "data.items",
+    "data.products",
+    "products",
+    "data",
+  ]);
+  const categoryItems = extractArray(categoriesData, [
+    "data.items",
+    "data.categories",
+    "categories",
+    "items",
+    "data",
+  ]);
+
+  const categories = useMemo(() => {
+    if (!Array.isArray(categoryItems) || categoryItems.length === 0) {
+      return ["All", "Keyboard", "Switch", "Keycap", "Accessory"];
+    }
+
+    const fromApi = categoryItems
+      .map((c) => c?.name)
+      .filter((name) => typeof name === "string" && name.trim().length > 0)
+      .map((name) => name.trim());
+
+    return ["All", ...Array.from(new Set(fromApi))];
+  }, [categoryItems]);
+
+  useEffect(() => {
+    if (!categories.includes(activeCategory)) {
+      setActiveCategory("All");
+    }
+  }, [categories, activeCategory]);
 
   const filteredProducts = useMemo(() => {
     let result = allProducts ?? [];

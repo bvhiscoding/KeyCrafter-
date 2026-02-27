@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+
+import { useForgotPasswordMutation } from "@/features/auth/authApi";
 
 const MailIcon = () => (
   <svg
@@ -18,6 +21,33 @@ const MailIcon = () => (
 );
 
 const ForgotPassword = () => {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [devResetLink, setDevResetLink] = useState("");
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setMessage("");
+    setError("");
+    setDevResetLink("");
+
+    try {
+      const response = await forgotPassword({ email }).unwrap();
+      setMessage(
+        response?.message || "If this email exists, a reset link has been sent.",
+      );
+
+      const resetToken = response?.data?.resetToken;
+      if (resetToken) {
+        setDevResetLink(`/reset-password?token=${resetToken}`);
+      }
+    } catch (err) {
+      setError(err?.data?.message || "Failed to send reset link.");
+    }
+  };
+
   return (
     <div className="auth-layout">
       <div className="auth-card">
@@ -55,7 +85,7 @@ const ForgotPassword = () => {
           </p>
         </div>
 
-        <div style={{ display: "grid", gap: "1rem" }}>
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
           <div>
             <label
               htmlFor="forgot-email"
@@ -74,18 +104,67 @@ const ForgotPassword = () => {
             <input
               id="forgot-email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               autoComplete="email"
+              required
             />
           </div>
+
+          {message && (
+            <p
+              style={{
+                padding: "0.65rem 0.9rem",
+                borderRadius: "8px",
+                fontSize: "0.83rem",
+                background: "rgba(57,255,20,0.08)",
+                border: "1px solid rgba(57,255,20,0.25)",
+                color: "#39ff14",
+              }}
+            >
+              {message}
+            </p>
+          )}
+
+          {error && (
+            <p
+              role="alert"
+              style={{
+                padding: "0.65rem 0.9rem",
+                borderRadius: "8px",
+                fontSize: "0.83rem",
+                background: "rgba(255,50,50,0.08)",
+                border: "1px solid rgba(255,50,50,0.25)",
+                color: "#ff5555",
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          {devResetLink && (
+            <p style={{ color: "var(--color-text-muted)", fontSize: "0.82rem" }}>
+              Dev reset link: {" "}
+              <Link
+                to={devResetLink}
+                style={{ color: "var(--color-neon-cyan)", fontWeight: 600 }}
+              >
+                Open reset page
+              </Link>
+            </p>
+          )}
+
           <button
-            type="button"
+            type="submit"
             className="button button-primary button-block"
             style={{ padding: "0.85rem" }}
+            disabled={isLoading}
+            aria-busy={isLoading}
           >
-            Send Reset Link
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </button>
-        </div>
+        </form>
 
         <div className="neon-divider" style={{ margin: "1.5rem 0" }} />
         <p

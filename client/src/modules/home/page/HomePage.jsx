@@ -8,9 +8,9 @@ import CommunitySection from "../components/CommunitySection";
 import DownloadCTA from "../components/DownloadCTA";
 
 const HomePage = () => {
-  const { data: apiData, isLoading } = useGetProductsQuery({ limit: 6 });
+  const { data: apiData, isLoading } = useGetProductsQuery({ limit: 8 });
   const raw = apiData?.data?.items ?? apiData?.data ?? apiData?.products;
-  const products = Array.isArray(raw) ? raw.slice(0, 6) : [];
+  const products = Array.isArray(raw) ? raw.slice(0, 8) : [];
 
   return (
     <div style={{ paddingTop: 0 }}>

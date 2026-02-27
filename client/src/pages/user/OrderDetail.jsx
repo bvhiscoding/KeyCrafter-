@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   useGetOrderByIdQuery,
   useCancelOrderMutation,
 } from "@/features/orders/ordersApi";
 import Loader from "@/components/common/Loader";
+import ProductReviews from "@/components/reviews/ProductReviews";
 
 /* ── Status config ──────────────────────────────────────────── */
 const STEPS = ["pending", "processing", "shipped", "delivered"];
@@ -74,8 +76,117 @@ const CircleIcon = () => (
   </svg>
 );
 
+/* ── Review Modal ──────────────────────────────────────────── */
+const ReviewModal = ({ product, orderId, onClose }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-label="Write a review"
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 1000,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "1rem",
+      background: "rgba(0,0,0,0.7)",
+      backdropFilter: "blur(6px)",
+    }}
+    onClick={(e) => e.target === e.currentTarget && onClose()}
+  >
+    <div
+      style={{
+        background: "var(--color-surface, #0d0d28)",
+        border: "1px solid rgba(0,245,255,0.2)",
+        borderRadius: "16px",
+        padding: "1.75rem",
+        width: "100%",
+        maxWidth: "520px",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        boxShadow: "0 0 40px rgba(0,245,255,0.1)",
+      }}
+    >
+      {/* Modal header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: "1.25rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {product.image && (
+            <img
+              src={product.image}
+              alt={product.name}
+              style={{
+                width: "44px",
+                height: "44px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                border: "1px solid rgba(0,245,255,0.2)",
+              }}
+            />
+          )}
+          <div>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--color-text-muted)",
+                fontFamily: "var(--font-display)",
+                textTransform: "uppercase",
+                letterSpacing: "0.07em",
+                margin: 0,
+              }}
+            >
+              Reviewing
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                color: "#e8e8ff",
+                fontSize: "0.9rem",
+                margin: 0,
+              }}
+            >
+              {product.name}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close review modal"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "var(--color-text-muted)",
+            cursor: "pointer",
+            fontSize: "1.4rem",
+            lineHeight: 1,
+            padding: "0.2rem",
+          }}
+        >
+          &times;
+        </button>
+      </div>
+
+      <ProductReviews
+        productId={product._id || product.id}
+        orderId={orderId}
+        canReview
+      />
+    </div>
+  </div>
+);
+
 const OrderDetail = () => {
   const { id } = useParams();
+  const [reviewProduct, setReviewProduct] = useState(null);
   const { data, isLoading, error } = useGetOrderByIdQuery(id);
   const [cancelOrder, { isLoading: cancelling }] = useCancelOrderMutation();
 
@@ -335,7 +446,10 @@ const OrderDetail = () => {
         }}
       >
         {/* Items */}
-        <div className="glass-card" style={{ padding: "1.5rem", flex: "1 1 500px" }}>
+        <div
+          className="glass-card"
+          style={{ padding: "1.5rem", flex: "1 1 500px" }}
+        >
           <h3
             style={{
               fontFamily: "var(--font-display)",
@@ -397,17 +511,68 @@ const OrderDetail = () => {
                     Qty: {item.quantity}
                   </p>
                 </div>
-                <p
+                <div
                   style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 700,
-                    color: "var(--color-neon-cyan)",
-                    fontSize: "0.9rem",
-                    whiteSpace: "nowrap",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: "0.4rem",
                   }}
                 >
-                  {(item.price * item.quantity).toLocaleString("vi-VN")} VND
-                </p>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      color: "var(--color-neon-cyan)",
+                      fontSize: "0.9rem",
+                      whiteSpace: "nowrap",
+                      margin: 0,
+                    }}
+                  >
+                    {(item.price * item.quantity).toLocaleString("vi-VN")} VND
+                  </p>
+                  {order.status === "delivered" && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewProduct({
+                          _id: item.product?._id || item.product,
+                          id: item.product?._id || item.product,
+                          name: item.name || item.product?.name,
+                          image: item.image,
+                        })
+                      }
+                      style={{
+                        padding: "0.25rem 0.65rem",
+                        background: "rgba(255,215,0,0.08)",
+                        border: "1px solid rgba(255,215,0,0.3)",
+                        borderRadius: "6px",
+                        color: "#ffd700",
+                        cursor: "pointer",
+                        fontSize: "0.68rem",
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        whiteSpace: "nowrap",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(255,215,0,0.16)";
+                        e.currentTarget.style.boxShadow =
+                          "0 0 8px rgba(255,215,0,0.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(255,215,0,0.08)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      ★ Review
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -547,6 +712,15 @@ const OrderDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewProduct && (
+        <ReviewModal
+          product={reviewProduct}
+          orderId={id}
+          onClose={() => setReviewProduct(null)}
+        />
+      )}
     </section>
   );
 };

@@ -9,9 +9,11 @@ const paymentRoutes = require('./payment.route');
 const reviewRoutes = require('./review.route');
 const userRoutes = require('./user.route');
 const adminRoutes = require('./admin');
+const uploadRoutes = require('./upload.route');
 
 const router = express.Router();
 router.use('/', reviewRoutes);
+router.use('/', uploadRoutes);
 router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/brands', brandRoutes);

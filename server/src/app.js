@@ -25,8 +25,17 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+// Serve uploaded images — set Cross-Origin-Resource-Policy: cross-origin
+// so the frontend (different port in dev) can load images via <img> tags.
+// helmet() defaults to 'same-origin' which blocks cross-origin embedding.
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(path.join(__dirname, '../public/uploads'))
+);
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {

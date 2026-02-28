@@ -120,6 +120,23 @@ const RevIcon = () => (
   </svg>
 );
 
+const BlogIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+
 export const adminNav = [
   { to: "/admin", label: "Dashboard", icon: <DashIcon />, end: true },
   { to: "/admin/products", label: "Products", icon: <ProdIcon /> },
@@ -128,4 +145,5 @@ export const adminNav = [
   { to: "/admin/orders", label: "Orders", icon: <OrderIcon /> },
   { to: "/admin/users", label: "Users", icon: <UserIcon /> },
   { to: "/admin/reviews", label: "Reviews", icon: <RevIcon /> },
+  { to: "/admin/blog", label: "Blog", icon: <BlogIcon /> },
 ];

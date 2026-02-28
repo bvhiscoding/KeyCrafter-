@@ -10,6 +10,8 @@ import MainLayout from "@/layouts/MainLayout";
 import AdminLayout from "@/modules/admin/layout/AdminLayout";
 import HomePage from "@/modules/home/page/HomePage";
 import SupportPage from "@/modules/support/page/SupportPage";
+import BlogListPage from "@/modules/blog/page/BlogListPage";
+import BlogDetailPage from "@/modules/blog/page/BlogDetailPage";
 
 // Pages (not yet migrated to modules — kept as-is for backward compat)
 import Dashboard from "@/pages/admin/Dashboard";
@@ -35,6 +37,8 @@ import Profile from "@/pages/user/Profile";
 import Register from "@/pages/auth/Register";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Wishlist from "@/pages/user/Wishlist";
+import AdminBlog from "@/pages/admin/Blog";
+import BlogForm from "@/pages/admin/BlogForm";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +50,8 @@ const router = createBrowserRouter([
       { path: "products/:slug", element: <ProductDetail /> },
       { path: "cart", element: <Cart /> },
       { path: "support", element: <SupportPage /> }, // ← new module
+      { path: "blog", element: <BlogListPage /> },
+      { path: "blog/:slug", element: <BlogDetailPage /> },
       {
         element: <PrivateRoute />,
         children: [
@@ -87,6 +93,9 @@ const router = createBrowserRouter([
           { path: "orders/:id", element: <AdminOrderDetail /> },
           { path: "users", element: <Users /> },
           { path: "reviews", element: <Reviews /> },
+          { path: "blog", element: <AdminBlog /> },
+          { path: "blog/new", element: <BlogForm /> },
+          { path: "blog/:id/edit", element: <BlogForm /> },
         ],
       },
     ],

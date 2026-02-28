@@ -157,6 +157,7 @@ const Header = () => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -216,7 +217,15 @@ const Header = () => {
         <nav
           className="nav-links"
           aria-label="Main navigation"
-          style={{ margin: "0 auto", gap: "2rem" }}
+          style={{ 
+            margin: "0 auto", 
+            gap: "2rem",
+            display: "flex",
+            opacity: isSearchFocused ? 0 : 1,
+            pointerEvents: isSearchFocused ? "none" : "auto",
+            transform: isSearchFocused ? "scale(0.95)" : "scale(1)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
         >
           <NavLink
             to="/products"
@@ -230,63 +239,64 @@ const Header = () => {
           >
             Support
           </NavLink>
+          <NavLink
+            to="/blog"
+            className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+          >
+            Blog
+          </NavLink>
         </nav>
 
         {/* Search Bar - Expand on focus */}
-        <form
-          onSubmit={handleSearch}
-          style={{
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            marginRight: "1rem",
-          }}
-        >
-          <div
+        <div style={{ position: "relative", width: "140px", height: "36px", marginRight: "1rem" }}>
+          <form
+            onSubmit={handleSearch}
             style={{
               position: "absolute",
-              left: "12px",
-              color: "var(--color-text-dim)",
-              pointerEvents: "none",
-              zIndex: 2,
+              right: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "flex",
+              alignItems: "center",
+              zIndex: 10,
             }}
           >
-            <SearchIcon />
-          </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(0,245,255,0.15)",
-              borderRadius: "99px",
-              padding: "0.45rem 1rem 0.45rem 2.4rem",
-              color: "#fff",
-              fontSize: "0.85rem",
-              outline: "none",
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              width: "140px",
-            }}
-            onFocus={(e) => {
-              e.target.style.width = "260px";
-              e.target.style.background = "rgba(0,0,0,0.6)";
-              e.target.style.borderColor = "var(--color-neon-cyan)";
-              e.target.style.boxShadow = "0 0 15px rgba(0,245,255,0.2)";
-              e.target.style.backdropFilter = "blur(10px)";
-              e.target.placeholder = "Search for keyboards, switches...";
-            }}
-            onBlur={(e) => {
-              e.target.style.width = "140px";
-              e.target.style.background = "rgba(255,255,255,0.05)";
-              e.target.style.borderColor = "rgba(0,245,255,0.15)";
-              e.target.style.boxShadow = "none";
-              e.target.style.backdropFilter = "none";
-              e.target.placeholder = "Search...";
-            }}
-          />
-        </form>
+            <div
+              style={{
+                position: "absolute",
+                left: "12px",
+                color: "var(--color-text-dim)",
+                pointerEvents: "none",
+                zIndex: 2,
+              }}
+            >
+              <SearchIcon />
+            </div>
+            <input
+              type="text"
+              placeholder={isSearchFocused ? "Search for keyboards, switches, keycaps..." : "Search..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              style={{
+                background: isSearchFocused ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.05)",
+                border: "1px solid",
+                borderColor: isSearchFocused ? "var(--color-neon-cyan)" : "rgba(0,245,255,0.15)",
+                borderRadius: "99px",
+                padding: "0.45rem 1rem 0.45rem 2.4rem",
+                color: "#fff",
+                fontSize: "0.85rem",
+                outline: "none",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                width: isSearchFocused ? "615px" : "140px",
+                maxWidth: "calc(100vw - 300px)", // Prevents overflowing on smaller screens
+                boxShadow: isSearchFocused ? "0 0 15px rgba(0,245,255,0.2)" : "none",
+                backdropFilter: isSearchFocused ? "blur(10px)" : "none",
+              }}
+            />
+          </form>
+        </div>
 
         {/* Nav Actions */}
         <div

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "@/lib/constants";
-import { setCredentials, logout } from "@/features/auth/authSlice";
+import { setCredentials, logout } from "@/store/auth.slice";
 
 // Base query that injects the JWT access token from Redux state into every request
 const rawBaseQuery = fetchBaseQuery({
@@ -14,12 +14,6 @@ const rawBaseQuery = fetchBaseQuery({
     return headers;
   },
 });
-
-// Wraps rawBaseQuery with automatic token-refresh logic (RTK Query re-auth pattern).
-// When a request returns 401 (expired/invalid token), this wrapper:
-//   1. Calls POST /auth/refresh-token with the stored refreshToken
-//   2. If successful → stores the new accessToken and retries the original request
-//   3. If failed → dispatches logout() to clear all auth state
 let isRefreshing = false;
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {

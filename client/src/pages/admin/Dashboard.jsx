@@ -2,7 +2,7 @@ import {
   useGetDashboardStatsQuery,
   useGetRevenueChartQuery,
   useGetTopProductsQuery,
-} from "@/features/admin/dashboardApi";
+} from "@/features/admin/dashboard.api";
 import StatsCard from "@/components/admin/StatsCard";
 import Loader from "@/components/common/Loader";
 import { Link } from "react-router-dom";

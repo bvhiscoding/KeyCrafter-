@@ -6,7 +6,7 @@ import {
   useGetWishlistQuery,
   useAddToWishlistMutation,
   useRemoveFromWishlistMutation,
-} from "@/features/user/userApi";
+} from "@/features/user/user.api";
 
 /* ── Icons ─────────────────────────────────────────────────── */
 const HeartIcon = ({ filled }) => (

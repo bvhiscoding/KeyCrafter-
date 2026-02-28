@@ -7,7 +7,7 @@ import {
   useAddAddressMutation,
   useUpdateAddressMutation,
   useDeleteAddressMutation,
-} from '@/features/user/userApi';
+} from '@/features/user/user.api';
 import Loader from '@/components/common/Loader';
 
 /* ── Icons ─────────────────────────────────────────────────── */

@@ -5,11 +5,11 @@ import {
   useCreateProductMutation,
   useUpdateProductMutation,
   useUploadProductImagesMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import {
   useGetAdminCategoriesQuery,
   useGetAdminBrandsQuery,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import Loader from "@/components/common/Loader";
 
 const BackIcon = () => (

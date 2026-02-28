@@ -4,7 +4,7 @@ import {
   useCreateBrandMutation,
   useUpdateBrandMutation,
   useDeleteBrandMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import AdminTable from "@/modules/admin/shared/AdminTable";
 import CrudFormModal from "@/modules/admin/shared/CrudFormModal";
 

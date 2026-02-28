@@ -4,8 +4,8 @@ import ProductGrid from "@/components/product/ProductGrid";
 import EmptyState from "@/components/common/EmptyState";
 import Loader from "@/components/common/Loader";
 import useDebounce from "@/hooks/useDebounce";
-import { useGetProductsQuery } from "@/features/products/productsApi";
-import { useGetCategoriesQuery } from "@/features/catalog/catalogApi";
+import { useGetProductsQuery } from "@/features/products/products.api";
+import { useGetCategoriesQuery } from "@/features/catalog/catalog.api";
 
 const SearchIcon = () => (
   <svg

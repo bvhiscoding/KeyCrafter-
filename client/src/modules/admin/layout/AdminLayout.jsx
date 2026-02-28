@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/hooks";
 import useAuth from "@/hooks/useAuth";
-import { logout as logoutAction } from "@/features/auth/authSlice";
-import { useLogoutMutation } from "@/features/auth/authApi";
+import { logout as logoutAction } from "@/store/auth.slice";
+import { useLogoutMutation } from "@/features/auth/auth.api";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
 

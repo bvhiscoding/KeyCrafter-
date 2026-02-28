@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   useGetAdminUsersQuery,
   useUpdateUserStatusMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import Loader from "@/components/common/Loader";
 
 const ROLE_COLORS = { admin: "#d966ff", user: "#00f5ff" };

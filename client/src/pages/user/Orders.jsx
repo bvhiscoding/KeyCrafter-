@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useGetOrdersQuery, useCancelOrderMutation } from '@/features/orders/ordersApi';
+import { useGetOrdersQuery, useCancelOrderMutation } from '@/features/orders/orders.api';
 import Loader from '@/components/common/Loader';
 
 /* ── Icons ─────────────────────────────────────────────────── */

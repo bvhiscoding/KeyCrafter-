@@ -4,7 +4,7 @@ import {
   clearCart,
   removeFromCart,
   updateQuantity,
-} from '@/features/cart/cartSlice';
+} from '@/store/cart.slice';
 
 const useCart = () => {
   const dispatch = useAppDispatch();

@@ -2,8 +2,8 @@ import { Navigate, useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import useCart from "@/hooks/useCart";
-import { useGetProductDetailQuery } from "@/features/products/productsApi";
-import { useGetOrdersQuery } from "@/features/orders/ordersApi";
+import { useGetProductDetailQuery } from "@/features/products/products.api";
+import { useGetOrdersQuery } from "@/features/orders/orders.api";
 import Loader from "@/components/common/Loader";
 import ProductReviews from "@/components/reviews/ProductReviews";
 

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import ProductGrid from "@/components/product/ProductGrid";
-import { useGetProductsQuery } from "@/features/products/productsApi";
+import { useGetProductsQuery } from "@/features/products/products.api";
 import HeroSection from "../components/HeroSection";
 import FeaturesBar from "../components/FeaturesBar";
 import GameCarousel from "../components/GameCarousel";

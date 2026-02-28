@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   useGetAdminProductsQuery,
   useDeleteProductMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import Loader from "@/components/common/Loader";
 
 const PlusIcon = () => (

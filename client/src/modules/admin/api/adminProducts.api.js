@@ -1,4 +1,4 @@
-import { baseApi } from "@/lib/baseApi";
+import { baseApi } from "@/lib/base.api";
 import { buildQueryString } from "@/shared/utils";
 
 export const adminProductsApi = baseApi.injectEndpoints({

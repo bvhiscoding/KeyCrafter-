@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import {
   useGetOrderByIdQuery,
   useCancelOrderMutation,
-} from "@/features/orders/ordersApi";
+} from "@/features/orders/orders.api";
 import Loader from "@/components/common/Loader";
 import ProductReviews from "@/components/reviews/ProductReviews";
 

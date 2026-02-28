@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/app/hooks";
-import { useRegisterMutation } from "@/features/auth/authApi";
-import { setCredentials } from "@/features/auth/authSlice";
+import { useRegisterMutation } from "@/features/auth/auth.api";
+import { setCredentials } from "@/store/auth.slice";
 
 const UserPlusIcon = () => (
   <svg

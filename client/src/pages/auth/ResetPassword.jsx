@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useResetPasswordMutation } from "@/features/auth/authApi";
+import { useResetPasswordMutation } from "@/features/auth/auth.api";
 
 const KeyIcon = () => (
   <svg

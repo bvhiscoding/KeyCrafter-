@@ -6,7 +6,7 @@ import {
   useCreateReviewMutation,
   useUpdateReviewMutation,
   useDeleteReviewMutation,
-} from "@/features/reviews/reviewsApi";
+} from "@/features/reviews/reviews.api";
 import { API_BASE_URL } from "@/lib/constants";
 
 /** Ensure image URL is absolute.

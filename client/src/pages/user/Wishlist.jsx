@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import ProductGrid from "@/components/product/ProductGrid";
 import Loader from "@/components/common/Loader";
-import { useGetWishlistQuery } from "@/features/user/userApi";
+import { useGetWishlistQuery } from "@/features/user/user.api";
 import useAuth from "@/hooks/useAuth";
 
 const Wishlist = () => {

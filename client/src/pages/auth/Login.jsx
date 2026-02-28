@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAppDispatch } from "@/app/hooks";
-import { setCredentials } from "@/features/auth/authSlice";
-import { useLoginMutation } from "@/features/auth/authApi";
+import { setCredentials } from "@/store/auth.slice";
+import { useLoginMutation } from "@/features/auth/auth.api";
 
 const KeyIcon = () => (
   <svg

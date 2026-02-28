@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import {
   useGetAdminOrderByIdQuery,
   useUpdateOrderStatusMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import Loader from "@/components/common/Loader";
 
 const STATUS_OPTIONS = [

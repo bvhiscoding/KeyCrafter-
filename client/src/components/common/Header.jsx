@@ -4,9 +4,9 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import useCart from "@/hooks/useCart";
 import { useAppDispatch } from "@/app/hooks";
-import { logout as logoutAction } from "@/features/auth/authSlice";
-import { useLogoutMutation } from "@/features/auth/authApi";
-import { baseApi } from "@/lib/baseApi";
+import { logout as logoutAction } from "@/store/auth.slice";
+import { useLogoutMutation } from "@/features/auth/auth.api";
+import { baseApi } from "@/lib/base.api";
 
 const CartIcon = () => (
   <svg

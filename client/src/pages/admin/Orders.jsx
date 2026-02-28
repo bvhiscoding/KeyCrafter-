@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   useGetAdminOrdersQuery,
   useUpdateOrderStatusMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import { Link } from "react-router-dom";
 import Loader from "@/components/common/Loader";
 

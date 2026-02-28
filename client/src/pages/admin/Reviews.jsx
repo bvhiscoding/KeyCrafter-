@@ -2,7 +2,7 @@ import {
   useGetAdminReviewsQuery,
   useApproveReviewMutation,
   useDeleteAdminReviewMutation,
-} from "@/features/admin/adminApi";
+} from "@/features/admin/admin.api";
 import Loader from "@/components/common/Loader";
 
 const StarIcon = ({ filled }) => (

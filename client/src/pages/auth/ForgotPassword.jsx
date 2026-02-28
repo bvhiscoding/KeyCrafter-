@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { useForgotPasswordMutation } from "@/features/auth/authApi";
+import { useForgotPasswordMutation } from "@/features/auth/auth.api";
 
 const MailIcon = () => (
   <svg

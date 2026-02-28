@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCreateOrderMutation } from "@/features/orders/ordersApi";
-import { useMergeGuestCartMutation } from "@/features/cart/cartApi";
-import { useGetProfileQuery } from "@/features/user/userApi";
+import { useCreateOrderMutation } from "@/features/orders/orders.api";
+import { useMergeGuestCartMutation } from "@/features/cart/cart.api";
+import { useGetProfileQuery } from "@/features/user/user.api";
 import useCart from "@/hooks/useCart";
 import useAuth from "@/hooks/useAuth";
 

@@ -30,6 +30,24 @@ const getCategoryStats = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, response, 'Fetched category stats'));
 });
 
+// ── User ──────────────────────────────────────────────────────────────────────
+const getMyBlogs = asyncHandler(async (req, res) => {
+  const response = await blogService.getMyBlogs(req.user._id, req.query);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Fetched my blogs'));
+});
+
+const createUserBlog = asyncHandler(async (req, res) => {
+  const response = await blogService.createUserBlog(req.user._id, req.body);
+  res
+    .status(HTTP_STATUS.CREATED)
+    .json(new ApiResponse(HTTP_STATUS.CREATED, response, 'Blog submitted for admin approval'));
+});
+
+const updateMyBlog = asyncHandler(async (req, res) => {
+  const response = await blogService.updateMyBlog(req.user._id, req.params.id, req.body);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'My blog updated'));
+});
+
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
 const getAdminBlogs = asyncHandler(async (req, res) => {
@@ -73,11 +91,24 @@ const togglePublish = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HTTP_STATUS.OK, response, 'Blog publish status toggled'));
 });
 
+const approveBlog = asyncHandler(async (req, res) => {
+  const response = await blogService.approveBlog(req.params.id);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Blog approved'));
+});
+
+const rejectBlog = asyncHandler(async (req, res) => {
+  const response = await blogService.rejectBlog(req.params.id);
+  res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, response, 'Blog rejected'));
+});
+
 module.exports = {
   getBlogs,
   getBlogBySlug,
   getFeaturedBlogs,
   getCategoryStats,
+  getMyBlogs,
+  createUserBlog,
+  updateMyBlog,
   getAdminBlogs,
   getAdminBlogById,
   createBlog,
@@ -85,4 +116,6 @@ module.exports = {
   updateBlog,
   deleteBlog,
   togglePublish,
+  approveBlog,
+  rejectBlog,
 };

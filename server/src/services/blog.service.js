@@ -23,7 +23,7 @@ const getBlogs = async (query) => {
 
   const [items, total] = await Promise.all([
     Blog.find(filter)
-      .select('-content -seo') // strip heavy fields from list view
+      .select('-content -seo')
       .populate('author', 'name avatar')
       .populate('relatedProducts', 'name slug thumbnail price salePrice')
       .sort(sortObj)
@@ -48,7 +48,7 @@ const getBlogBySlug = async (slug) => {
   const blog = await Blog.findOneAndUpdate(
     { slug, status: 'published' },
     { $inc: { viewCount: 1 } },
-    { new: true }
+    { new: true },
   )
     .populate('author', 'name avatar')
     .populate('relatedProducts', 'name slug thumbnail price salePrice avgRating');
@@ -104,6 +104,48 @@ const getAdminBlogs = async (query) => {
   };
 };
 
+// ── User: list own posts ──────────────────────────────────────────────────────
+const getMyBlogs = async (userId, query) => {
+  const {
+    page = 1,
+    limit = 10,
+    status,
+    category,
+    search,
+    sort = 'latest',
+  } = query;
+  const skip = (Number(page) - 1) * Number(limit);
+  const filter = { author: userId };
+
+  if (status) filter.status = status;
+  if (category) filter.category = category;
+  if (search) filter.$text = { $search: search };
+
+  let sortObj = { createdAt: -1 };
+  if (sort === 'oldest') sortObj = { createdAt: 1 };
+  if (sort === 'popular') sortObj = { viewCount: -1, createdAt: -1 };
+
+  const [items, total] = await Promise.all([
+    Blog.find(filter)
+      .populate('author', 'name avatar')
+      .populate('relatedProducts', 'name slug thumbnail price salePrice')
+      .sort(sortObj)
+      .skip(skip)
+      .limit(Number(limit)),
+    Blog.countDocuments(filter),
+  ]);
+
+  return {
+    items,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+    },
+  };
+};
+
 // ── Admin: single by ID (for edit form) ──────────────────────────────────────
 const getAdminBlogById = async (id) => {
   const blog = await Blog.findById(id).populate('author', 'name avatar');
@@ -114,6 +156,20 @@ const getAdminBlogById = async (id) => {
 // ── Admin: create ─────────────────────────────────────────────────────────────
 const createBlog = async (authorId, data) => {
   const blog = await Blog.create({ ...data, author: authorId });
+  return blog;
+};
+
+// ── User: create (admin approval required) ───────────────────────────────────
+const createUserBlog = async (authorId, data) => {
+  const payload = {
+    ...data,
+    author: authorId,
+    status: 'draft',
+    isFeatured: false,
+    rating: null,
+  };
+
+  const blog = await Blog.create(payload);
   return blog;
 };
 
@@ -158,6 +214,28 @@ const updateBlog = async (id, data) => {
   return blog;
 };
 
+// ── User: update own post before approval ─────────────────────────────────────
+const updateMyBlog = async (userId, id, data) => {
+  const blog = await Blog.findOne({ _id: id, author: userId });
+  if (!blog) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Blog post not found');
+
+  if (blog.status === 'published') {
+    throw new ApiError(
+      HTTP_STATUS.FORBIDDEN,
+      'Published posts cannot be edited by user. Contact admin.',
+    );
+  }
+
+  const sanitized = { ...data };
+  delete sanitized.status;
+  delete sanitized.isFeatured;
+  delete sanitized.rating;
+
+  Object.assign(blog, sanitized);
+  await blog.save();
+  return blog;
+};
+
 // ── Admin: delete ─────────────────────────────────────────────────────────────
 const deleteBlog = async (id) => {
   const blog = await Blog.findByIdAndDelete(id);
@@ -178,6 +256,28 @@ const togglePublish = async (id) => {
   return blog;
 };
 
+// ── Admin: approve/reject submitted posts ─────────────────────────────────────
+const approveBlog = async (id) => {
+  const blog = await Blog.findById(id);
+  if (!blog) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Blog post not found');
+
+  blog.status = 'published';
+  if (!blog.publishedAt) {
+    blog.publishedAt = new Date();
+  }
+  await blog.save();
+  return blog;
+};
+
+const rejectBlog = async (id) => {
+  const blog = await Blog.findById(id);
+  if (!blog) throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Blog post not found');
+
+  blog.status = 'archived';
+  await blog.save();
+  return blog;
+};
+
 // ── Public: available categories with post counts ─────────────────────────────
 const getCategoryStats = async () => {
   return Blog.aggregate([
@@ -192,11 +292,16 @@ module.exports = {
   getBlogBySlug,
   getFeaturedBlogs,
   getAdminBlogs,
+  getMyBlogs,
   getAdminBlogById,
   createBlog,
+  createUserBlog,
   importBlogs,
   updateBlog,
+  updateMyBlog,
   deleteBlog,
   togglePublish,
+  approveBlog,
+  rejectBlog,
   getCategoryStats,
 };

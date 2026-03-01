@@ -5,27 +5,37 @@ export const games = [
     name: "VALORANT",
     genre: "TACTICAL SHOOTER",
     color: "#ff4655",
-    img: "/valorant-logo.png",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363882/keycrafter/client-assets/home-games/valorant-logo.png",
   },
-  { name: "CS2", genre: "FPS", color: "#ff8c00", img: "/cs2-logo.jpg" },
+  {
+    name: "CS2",
+    genre: "FPS",
+    color: "#ff8c00",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363883/keycrafter/client-assets/home-games/cs2-logo.jpg",
+  },
   {
     name: "APEX LEGENDS",
     genre: "BATTLE ROYALE",
     color: "#cd3333",
-    img: "/apex-legend-logo.jpg",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363884/keycrafter/client-assets/home-games/apex-legend-logo.jpg",
   },
   {
     name: "STARCRAFT II",
     genre: "STRATEGY",
     color: "#0080ff",
-    img: "/star-craft-2-logo.jpg",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363885/keycrafter/client-assets/home-games/star-craft-2-logo.jpg",
   },
-  { name: "DOTA 2", genre: "MOBA", color: "#c23b22", img: "/dota-2-logo.png" },
+  {
+    name: "DOTA 2",
+    genre: "MOBA",
+    color: "#c23b22",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363886/keycrafter/client-assets/home-games/dota-2-logo.png",
+  },
   {
     name: "CYBERPUNK 2077",
     genre: "RPG",
     color: "#fcee09",
-    img: "/cyberpunk-2077-logo.jpg",
+    img: "https://res.cloudinary.com/dwrbsosxc/image/upload/v1772363887/keycrafter/client-assets/home-games/cyberpunk-2077-logo.jpg",
   },
 ];
 

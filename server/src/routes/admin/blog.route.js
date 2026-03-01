@@ -20,6 +20,8 @@ router.post('/', validate(createBlogSchema), blogController.createBlog);
 router.post('/import', validate(importBlogsSchema), blogController.importBlogs);
 router.put('/:id', validate(updateBlogSchema), blogController.updateBlog);
 router.put('/:id/toggle-publish', blogController.togglePublish);
+router.put('/:id/approve', blogController.approveBlog);
+router.put('/:id/reject', blogController.rejectBlog);
 router.delete('/:id', blogController.deleteBlog);
 
 module.exports = router;

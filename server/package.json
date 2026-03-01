@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "migrate:cloudinary": "node src/scripts/migrate-local-images-to-cloudinary.js",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "test": "echo \"Tests coming soon\" && exit 0"

@@ -4,6 +4,11 @@ const multer = require('multer');
 const { protect } = require('../middlewares/auth.middleware');
 const ApiResponse = require('../utils/ApiResponse');
 const HTTP_STATUS = require('../constants/httpStatus');
+const asyncHandler = require('../utils/asyncHandler');
+const {
+  uploadImageFromPath,
+  removeLocalFile,
+} = require('../services/cloudinary-upload.service');
 
 /* ── Multer – disk storage for review images ── */
 const storage = multer.diskStorage({
@@ -32,10 +37,28 @@ const router = express.Router();
  * Upload up to 3 images for a review.
  * Returns array of URLs accessible at /uploads/<filename>
  */
-router.post('/upload/review-image', protect, upload.array('images', 3), (req, res) => {
+router.post('/upload/review-image', protect, upload.array('images', 3), asyncHandler(async (req, res) => {
+  const files = req.files || [];
+  const cloudinaryResults = await Promise.all(files.map((file) => uploadImageFromPath(file.path, {
+    folder: `keycrafter/reviews/${req.user._id}`,
+  })));
+
   const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const urls = (req.files || []).map((f) => `${baseUrl}/uploads/${f.filename}`);
+  const urls = files.map((file, index) => {
+    const cloudinaryUrl = cloudinaryResults[index]?.secure_url;
+    return cloudinaryUrl || `${baseUrl}/uploads/${file.filename}`;
+  });
+
+  await Promise.all(
+    files.map((file, index) => {
+      if (!cloudinaryResults[index]) {
+        return Promise.resolve();
+      }
+      return removeLocalFile(file.path);
+    }),
+  );
+
   res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { urls }, 'Images uploaded'));
-});
+}));
 
 module.exports = router;

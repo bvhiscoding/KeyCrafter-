@@ -3,6 +3,10 @@ const Category = require('../models/category.model');
 const Brand = require('../models/brand.model');
 const HTTP_STATUS = require('../constants/httpStatus');
 const ApiError = require('../utils/ApiError');
+const {
+  uploadImageFromPath,
+  removeLocalFile,
+} = require('./cloudinary-upload.service');
 
 const sortMap = {
   newest: { createdAt: -1 },
@@ -139,8 +143,14 @@ const uploadProductImages = async (id, file) => {
     throw new ApiError(HTTP_STATUS.BAD_REQUEST, 'No image file provided');
   }
 
-  // Build public URL: /uploads/filename
-  const imageUrl = `/uploads/${file.filename}`;
+  const cloudinaryResult = await uploadImageFromPath(file.path, {
+    folder: `keycrafter/products/${id}`,
+  });
+  const imageUrl = cloudinaryResult?.secure_url || `/uploads/${file.filename}`;
+
+  if (cloudinaryResult) {
+    await removeLocalFile(file.path);
+  }
 
   // Push to images array, set as thumbnail if none yet
   product.images = [...(product.images || []), imageUrl];

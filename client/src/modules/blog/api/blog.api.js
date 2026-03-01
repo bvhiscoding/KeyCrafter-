@@ -27,6 +27,28 @@ export const blogApi = baseApi.injectEndpoints({
       providesTags: ["Blog"],
     }),
 
+    getMyBlogs: builder.query({
+      query: (params = {}) => {
+        const qs = buildQueryString(params);
+        return `/blogs/my-posts${qs ? `?${qs}` : ""}`;
+      },
+      providesTags: ["Blog"],
+    }),
+
+    createMyBlog: builder.mutation({
+      query: (data) => ({ url: `/blogs/my-posts`, method: "POST", body: data }),
+      invalidatesTags: ["Blog"],
+    }),
+
+    updateMyBlog: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/blogs/my-posts/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (_r, _e, { id }) => ["Blog", { type: "Blog", id }],
+    }),
+
     // ── Admin ────────────────────────────────────────────────────────────────
     getAdminBlogs: builder.query({
       query: (params = {}) => {
@@ -67,6 +89,22 @@ export const blogApi = baseApi.injectEndpoints({
       invalidatesTags: ["Admin", "Blog"],
     }),
 
+    approveBlog: builder.mutation({
+      query: (id) => ({
+        url: `/admin/blogs/${id}/approve`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Admin", "Blog"],
+    }),
+
+    rejectBlog: builder.mutation({
+      query: (id) => ({
+        url: `/admin/blogs/${id}/reject`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Admin", "Blog"],
+    }),
+
     deleteBlog: builder.mutation({
       query: (id) => ({ url: `/admin/blogs/${id}`, method: "DELETE" }),
       invalidatesTags: ["Admin", "Blog"],
@@ -80,10 +118,15 @@ export const {
   useGetBlogBySlugQuery,
   useGetFeaturedBlogsQuery,
   useGetBlogCategoriesQuery,
+  useGetMyBlogsQuery,
+  useCreateMyBlogMutation,
+  useUpdateMyBlogMutation,
   useGetAdminBlogsQuery,
   useGetAdminBlogByIdQuery,
   useCreateBlogMutation,
   useUpdateBlogMutation,
   useToggleBlogPublishMutation,
+  useApproveBlogMutation,
+  useRejectBlogMutation,
   useDeleteBlogMutation,
 } = blogApi;

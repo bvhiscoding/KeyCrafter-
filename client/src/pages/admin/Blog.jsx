@@ -4,6 +4,8 @@ import {
   useGetAdminBlogsQuery,
   useToggleBlogPublishMutation,
   useDeleteBlogMutation,
+  useApproveBlogMutation,
+  useRejectBlogMutation,
 } from "@/modules/blog/api/blog.api";
 import Loader from "@/components/common/Loader";
 
@@ -97,11 +99,17 @@ const STATUS_COLORS = {
     color: "#888",
     border: "rgba(100,100,100,0.2)",
   },
+  pending: {
+    bg: "rgba(0,245,255,0.08)",
+    color: "#00f5ff",
+    border: "rgba(0,245,255,0.3)",
+  },
 };
 
 const STATUS_LABELS = {
   published: "Published",
   draft: "Draft",
+  pending: "Pending",
   archived: "Archived",
 };
 
@@ -110,6 +118,8 @@ const AdminBlog = () => {
   const { data, isLoading } = useGetAdminBlogsQuery(params);
   const [togglePublish] = useToggleBlogPublishMutation();
   const [deleteBlog] = useDeleteBlogMutation();
+  const [approveBlog] = useApproveBlogMutation();
+  const [rejectBlog] = useRejectBlogMutation();
 
   const blogs = data?.data?.items ?? [];
   const pagination = data?.data?.pagination;
@@ -128,6 +138,24 @@ const AdminBlog = () => {
       await deleteBlog(id).unwrap();
     } catch (err) {
       alert(err?.data?.message || "Failed to delete");
+    }
+  };
+
+  const handleApprove = async (id, title) => {
+    if (!window.confirm(`Approve "${title}"?`)) return;
+    try {
+      await approveBlog(id).unwrap();
+    } catch (err) {
+      alert(err?.data?.message || "Failed to approve");
+    }
+  };
+
+  const handleReject = async (id, title) => {
+    if (!window.confirm(`Reject "${title}"?`)) return;
+    try {
+      await rejectBlog(id).unwrap();
+    } catch (err) {
+      alert(err?.data?.message || "Failed to reject");
     }
   };
 
@@ -186,7 +214,7 @@ const AdminBlog = () => {
 
       {/* Filter row */}
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {["", "published", "draft", "archived"].map((s) => (
+        {["", "pending", "published", "draft", "archived"].map((s) => (
           <button
             key={s}
             type="button"
@@ -403,6 +431,52 @@ const AdminBlog = () => {
                           justifyContent: "flex-end",
                         }}
                       >
+                        {blog.status === "pending" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(blog._id, blog.title)}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.2rem",
+                                padding: "0.3rem 0.65rem",
+                                background: "rgba(57,255,20,0.06)",
+                                border: "1px solid rgba(57,255,20,0.2)",
+                                color: "#39ff14",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "0.72rem",
+                                fontFamily: "var(--font-display)",
+                                fontWeight: 700,
+                              }}
+                              title="Approve Post"
+                            >
+                              ✅
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(blog._id, blog.title)}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "0.2rem",
+                                padding: "0.3rem 0.65rem",
+                                background: "rgba(255,50,50,0.06)",
+                                border: "1px solid rgba(255,50,50,0.18)",
+                                color: "#ff5555",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "0.72rem",
+                                fontFamily: "var(--font-display)",
+                                fontWeight: 700,
+                              }}
+                              title="Reject Post"
+                            >
+                              ❌
+                            </button>
+                          </>
+                        )}
                         {blog.status === "published" && (
                           <a
                             href={`/blog/${blog.slug}`}

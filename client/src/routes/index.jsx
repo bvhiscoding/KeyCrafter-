@@ -40,6 +40,10 @@ import Wishlist from "@/pages/user/Wishlist";
 import AdminBlog from "@/pages/admin/Blog";
 import BlogForm from "@/pages/admin/BlogForm";
 
+// User Blog pages
+import MyBlogPosts from "@/pages/user/MyBlogPosts";
+import SubmitBlog from "@/pages/user/SubmitBlog";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -61,6 +65,9 @@ const router = createBrowserRouter([
           { path: "orders", element: <Orders /> },
           { path: "orders/:id", element: <OrderDetail /> },
           { path: "wishlist", element: <Wishlist /> },
+          { path: "blog/my-posts", element: <MyBlogPosts /> },
+          { path: "blog/my-posts/new", element: <SubmitBlog /> },
+          { path: "blog/my-posts/:id/edit", element: <SubmitBlog /> },
         ],
       },
       { path: "not-found", element: <NotFound /> },

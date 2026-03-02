@@ -536,8 +536,62 @@ const BlogListPage = () => {
         margin: "0 auto",
       }}
     >
-      {/* Page Header omitted to match template which jumps straight into Hero, but let's keep a subtle title */}
-      <h1 style={{ display: "none" }}>KeyCrafter Blogs</h1>
+      {/* Top action bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 900, color: "#fff", margin: 0, fontFamily: "var(--font-display)", textTransform: "uppercase", letterSpacing: "2px" }}>
+          KeyCrafter <span style={{ color: "var(--color-neon-cyan)" }}>Blog</span>
+        </h1>
+        
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <Link
+            to="/blog/my-posts"
+            style={{
+              padding: "0.6rem 1.2rem",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px",
+              color: "#fff",
+              textDecoration: "none",
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              transition: "all 0.2s"
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+            onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+          >
+            My Posts
+          </Link>
+          <Link
+            to="/blog/my-posts/new"
+            style={{
+              padding: "0.6rem 1.2rem",
+              background: "rgba(0,245,255,0.1)",
+              border: "1px solid rgba(0,245,255,0.3)",
+              borderRadius: "8px",
+              color: "var(--color-neon-cyan)",
+              textDecoration: "none",
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              boxShadow: "0 0 10px rgba(0,245,255,0.1)",
+              transition: "all 0.2s"
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "rgba(0,245,255,0.2)";
+              e.currentTarget.style.boxShadow = "0 0 15px rgba(0,245,255,0.3)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "rgba(0,245,255,0.1)";
+              e.currentTarget.style.boxShadow = "0 0 10px rgba(0,245,255,0.1)";
+            }}
+          >
+            + Write Post
+          </Link>
+        </div>
+      </div>
 
       {isLoading ? (
         <div style={{ textAlign: "center", color: "#fff", padding: "4rem" }}>

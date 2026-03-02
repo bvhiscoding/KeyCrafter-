@@ -148,6 +148,23 @@ const HeartIcon = () => (
   </svg>
 );
 
+const PenIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+
 const Header = () => {
   const { isAuthenticated, isAdmin, user } = useAuth();
   const { totalItems } = useCart();
@@ -217,8 +234,8 @@ const Header = () => {
         <nav
           className="nav-links"
           aria-label="Main navigation"
-          style={{ 
-            margin: "0 auto", 
+          style={{
+            margin: "0 auto",
             gap: "2rem",
             display: "flex",
             opacity: isSearchFocused ? 0 : 1,
@@ -248,7 +265,14 @@ const Header = () => {
         </nav>
 
         {/* Search Bar - Expand on focus */}
-        <div style={{ position: "relative", width: "140px", height: "36px", marginRight: "1rem" }}>
+        <div
+          style={{
+            position: "relative",
+            width: "140px",
+            height: "36px",
+            marginRight: "1rem",
+          }}
+        >
           <form
             onSubmit={handleSearch}
             style={{
@@ -274,15 +298,23 @@ const Header = () => {
             </div>
             <input
               type="text"
-              placeholder={isSearchFocused ? "Search for keyboards, switches, keycaps..." : "Search..."}
+              placeholder={
+                isSearchFocused
+                  ? "Search for keyboards, switches, keycaps..."
+                  : "Search..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               style={{
-                background: isSearchFocused ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.05)",
+                background: isSearchFocused
+                  ? "rgba(0,0,0,0.7)"
+                  : "rgba(255,255,255,0.05)",
                 border: "1px solid",
-                borderColor: isSearchFocused ? "var(--color-neon-cyan)" : "rgba(0,245,255,0.15)",
+                borderColor: isSearchFocused
+                  ? "var(--color-neon-cyan)"
+                  : "rgba(0,245,255,0.15)",
                 borderRadius: "99px",
                 padding: "0.45rem 1rem 0.45rem 2.4rem",
                 color: "#fff",
@@ -291,7 +323,9 @@ const Header = () => {
                 transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                 width: isSearchFocused ? "615px" : "140px",
                 maxWidth: "calc(100vw - 300px)", // Prevents overflowing on smaller screens
-                boxShadow: isSearchFocused ? "0 0 15px rgba(0,245,255,0.2)" : "none",
+                boxShadow: isSearchFocused
+                  ? "0 0 15px rgba(0,245,255,0.2)"
+                  : "none",
                 backdropFilter: isSearchFocused ? "blur(10px)" : "none",
               }}
             />
@@ -407,6 +441,23 @@ const Header = () => {
                     }}
                   >
                     <ProfileIcon /> My Profile
+                  </Link>
+                  <Link
+                    to="/blog/my-posts"
+                    className="dropdown-item"
+                    style={{
+                      padding: "0.75rem 1rem",
+                      color: "#fff",
+                      fontSize: "0.85rem",
+                      textDecoration: "none",
+                      transition: "background 0.2s",
+                      borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <PenIcon /> My Posts
                   </Link>
                   {isAdmin && (
                     <Link

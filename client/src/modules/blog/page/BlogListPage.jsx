@@ -463,6 +463,7 @@ const LatestCard = ({ post, tall = false }) => {
         style={{
           position: "absolute",
           inset: 0,
+          borderRadius: "inherit",
           background: post.coverImage
             ? `url(${post.coverImage}) center/cover`
             : `linear-gradient(135deg, ${color}22 0%, rgba(0,0,0,0.6) 100%)`,
@@ -471,13 +472,21 @@ const LatestCard = ({ post, tall = false }) => {
       <div
         style={{
           position: "absolute",
-          inset: 0,
+          inset: "-2px",
+          borderRadius: "inherit",
           background:
-            "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)",
+            "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
           padding: tall ? "2rem" : "1.5rem",
+          zIndex: 10,
         }}
       >
         <CategoryBadge
@@ -525,7 +534,9 @@ const BlogListPage = () => {
   const fyList2 = posts[5];
 
   const latestTall = posts[6] || posts[0];
-  const latestCards = Array.from({ length: 4 }).map((_, i) => posts[7 + i] || posts[0]);
+  const latestCards = Array.from({ length: 4 }).map(
+    (_, i) => posts[7 + i] || posts[0],
+  );
 
   return (
     <div
@@ -537,11 +548,31 @@ const BlogListPage = () => {
       }}
     >
       {/* Top action bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
-        <h1 style={{ fontSize: "2rem", fontWeight: 900, color: "#fff", margin: 0, fontFamily: "var(--font-display)", textTransform: "uppercase", letterSpacing: "2px" }}>
-          KeyCrafter <span style={{ color: "var(--color-neon-cyan)" }}>Blog</span>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "2rem",
+          flexWrap: "wrap",
+          gap: "1rem",
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: 900,
+            color: "#fff",
+            margin: 0,
+            fontFamily: "var(--font-display)",
+            textTransform: "uppercase",
+            letterSpacing: "2px",
+          }}
+        >
+          KeyCrafter{" "}
+          <span style={{ color: "var(--color-neon-cyan)" }}>Blog</span>
         </h1>
-        
+
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
           <Link
             to="/blog/my-posts"
@@ -555,10 +586,14 @@ const BlogListPage = () => {
               fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: "0.85rem",
-              transition: "all 0.2s"
+              transition: "all 0.2s",
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-            onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.05)")
+            }
           >
             My Posts
           </Link>
@@ -577,7 +612,7 @@ const BlogListPage = () => {
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               boxShadow: "0 0 10px rgba(0,245,255,0.1)",
-              transition: "all 0.2s"
+              transition: "all 0.2s",
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.background = "rgba(0,245,255,0.2)";
@@ -614,18 +649,31 @@ const BlogListPage = () => {
 
           {/* Trending Section */}
           <SectionHeader title="Trending" viewAllLink="#" />
-          <div className="trending-grid" style={{ display: "flex", gap: "2rem", flexDirection: "row" }}>
+          <div
+            className="trending-grid"
+            style={{ display: "flex", gap: "2rem", flexDirection: "row" }}
+          >
             <div className="trend-large" style={{ flex: "0 0 65%" }}>
               <TrendCard post={trendingLarge || posts[0]} large={true} />
             </div>
-            <div className="trend-small" style={{ flex: "0 0 calc(35% - 2rem)" }}>
+            <div
+              className="trend-small"
+              style={{ flex: "0 0 calc(35% - 2rem)" }}
+            >
               <TrendCard post={trendingSmall || posts[0]} large={false} />
             </div>
           </div>
 
           {/* For You Section */}
           <SectionHeader title="For You" />
-          <div className="foryou-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem" }}>
+          <div
+            className="foryou-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "2.5rem",
+            }}
+          >
             <FYMain post={fyMain || posts[0]} />
             <div
               style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
@@ -637,7 +685,14 @@ const BlogListPage = () => {
 
           {/* Latest Blogs Section */}
           <SectionHeader title="Latest Blogs" />
-          <div className="latest-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+          <div
+            className="latest-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "1.5rem",
+            }}
+          >
             {latestTall && (
               <div className="latest-tall" style={{ gridRow: "span 2" }}>
                 <LatestCard post={latestTall} tall={true} />

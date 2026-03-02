@@ -93,6 +93,7 @@ const BlogCard = ({ post }) => {
         style={{
           position: "absolute",
           inset: 0,
+          borderRadius: "inherit",
           background: post.coverImage
             ? `url(${post.coverImage}) center/cover`
             : `linear-gradient(135deg, ${color}33 0%, rgba(0,0,0,0.8) 100%)`,
@@ -103,13 +104,21 @@ const BlogCard = ({ post }) => {
       <div
         style={{
           position: "absolute",
-          inset: 0,
+          inset: "-2px",
+          borderRadius: "inherit",
           background:
-            "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%)",
+            "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
           padding: "1.5rem",
+          zIndex: 10,
         }}
       >
         <CategoryBadge category={post.category} />

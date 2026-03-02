@@ -5,6 +5,7 @@ import HeroSection from "../components/HeroSection";
 import FeaturesBar from "../components/FeaturesBar";
 import GameCarousel from "../components/GameCarousel";
 import CommunitySection from "../components/CommunitySection";
+import HomeBlogSection from "../components/HomeBlogSection";
 import DownloadCTA from "../components/DownloadCTA";
 
 const HomePage = () => {
@@ -88,6 +89,9 @@ const HomePage = () => {
 
       {/* ═══ COMMUNITY ═══ */}
       <CommunitySection />
+
+      {/* ═══ BLOG SECTION ═══ */}
+      <HomeBlogSection />
 
       {/* ═══ DOWNLOAD CTA ═══ */}
       <DownloadCTA />

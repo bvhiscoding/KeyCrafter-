@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const errorMiddleware = require('./middlewares/error.middleware');
 const routes = require('./routes');
 const paymentController = require('./controllers/payment.controller');
+const { globalLimiter } = require('./middlewares/rateLimiter.middleware');
 
 const app = express();
 
@@ -24,6 +25,9 @@ app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply rate limiting middleware globally
+app.use(globalLimiter);
 
 // Serve uploaded images — set Cross-Origin-Resource-Policy: cross-origin
 // so the frontend (different port in dev) can load images via <img> tags.

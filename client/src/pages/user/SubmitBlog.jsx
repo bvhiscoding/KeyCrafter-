@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import DOMPurify from "dompurify";
 import {
   useCreateMyBlogMutation,
   useUpdateMyBlogMutation,
@@ -35,20 +36,39 @@ const DEFAULT_FORM = {
 
 // ── Styled Helpers ────────────────────────────────────────────────────────────
 const Field = ({ label, hint, children }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", width: "100%" }}>
-    <label style={{
-      display: "block",
-      fontFamily: "var(--font-display)",
-      fontSize: "0.75rem",
-      fontWeight: 700,
-      color: "var(--color-text-muted)",
-      textTransform: "uppercase",
-      letterSpacing: "0.1em"
-    }}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.25rem",
+      width: "100%",
+    }}
+  >
+    <label
+      style={{
+        display: "block",
+        fontFamily: "var(--font-display)",
+        fontSize: "0.75rem",
+        fontWeight: 700,
+        color: "var(--color-text-muted)",
+        textTransform: "uppercase",
+        letterSpacing: "0.1em",
+      }}
+    >
       {label}
     </label>
     {children}
-    {hint && <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", marginTop: "0.25rem" }}>{hint}</p>}
+    {hint && (
+      <p
+        style={{
+          fontSize: "0.75rem",
+          color: "rgba(255,255,255,0.4)",
+          marginTop: "0.25rem",
+        }}
+      >
+        {hint}
+      </p>
+    )}
   </div>
 );
 
@@ -62,7 +82,7 @@ const sharedInputStyle = {
   fontFamily: "var(--font-body)",
   fontSize: "0.95rem",
   outline: "none",
-  transition: "all 0.2s"
+  transition: "all 0.2s",
 };
 
 const handleInputFocus = (e) => {
@@ -157,7 +177,15 @@ const SubmitBlog = () => {
     <section className="container" style={{ padding: "3rem 0 5rem" }}>
       {/* Page header */}
       <div style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 900, color: "#fff", marginBottom: "0.2rem" }}>
+        <h1
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "2rem",
+            fontWeight: 900,
+            color: "#fff",
+            marginBottom: "0.2rem",
+          }}
+        >
           {isEdit ? "✏️ Edit Post" : "📝 Submit New Post"}
         </h1>
         <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
@@ -165,31 +193,56 @@ const SubmitBlog = () => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "2rem", alignItems: "start" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 340px",
+          gap: "2rem",
+          alignItems: "start",
+        }}
+      >
         <style>{`
           @media (max-width: 1024px) {
             form { grid-template-columns: 1fr !important; }
           }
         `}</style>
-        
+
         {/* ── Left: main content ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+        >
           {/* Title and Excerpt */}
-          <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div
+            className="glass-card"
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.5rem",
+            }}
+          >
             <Field label="Post Title *">
               <input
                 name="title"
                 value={form.title}
                 onChange={handleChange}
                 placeholder="Example: Gateron Yellow Review – Best budget switch"
-                style={{ ...sharedInputStyle, fontSize: "1.2rem", fontWeight: 700 }}
+                style={{
+                  ...sharedInputStyle,
+                  fontSize: "1.2rem",
+                  fontWeight: 700,
+                }}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 required
               />
             </Field>
-            
-            <Field label="Excerpt" hint="Displayed in list view, max 500 characters">
+
+            <Field
+              label="Excerpt"
+              hint="Displayed in list view, max 500 characters"
+            >
               <textarea
                 name="excerpt"
                 value={form.excerpt}
@@ -197,7 +250,11 @@ const SubmitBlog = () => {
                 placeholder="Short description of the post..."
                 rows={2}
                 maxLength={500}
-                style={{ ...sharedInputStyle, resize: "vertical", fontFamily: "var(--font-body)" }}
+                style={{
+                  ...sharedInputStyle,
+                  resize: "vertical",
+                  fontFamily: "var(--font-body)",
+                }}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
               />
@@ -206,7 +263,14 @@ const SubmitBlog = () => {
 
           {/* Editor Tabs & Body */}
           <div>
-            <div style={{ display: "flex", gap: "0.2rem", borderBottom: "1px solid rgba(255,255,255,0.1)", marginBottom: "-1px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.2rem",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+                marginBottom: "-1px",
+              }}
+            >
               {["content", "preview"].map((tab) => (
                 <button
                   key={tab}
@@ -214,18 +278,26 @@ const SubmitBlog = () => {
                   onClick={() => setActiveTab(tab)}
                   style={{
                     padding: "0.8rem 1.5rem",
-                    background: activeTab === tab ? "rgba(13,13,40,0.6)" : "transparent",
+                    background:
+                      activeTab === tab ? "rgba(13,13,40,0.6)" : "transparent",
                     border: "1px solid",
-                    borderColor: activeTab === tab ? "rgba(255,255,255,0.1)" : "transparent",
-                    borderBottomColor: activeTab === tab ? "transparent" : "rgba(255,255,255,0.1)",
+                    borderColor:
+                      activeTab === tab
+                        ? "rgba(255,255,255,0.1)"
+                        : "transparent",
+                    borderBottomColor:
+                      activeTab === tab
+                        ? "transparent"
+                        : "rgba(255,255,255,0.1)",
                     borderRadius: "8px 8px 0 0",
-                    color: activeTab === tab ? "#fff" : "var(--color-text-muted)",
+                    color:
+                      activeTab === tab ? "#fff" : "var(--color-text-muted)",
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
                     fontSize: "0.8rem",
                     cursor: "pointer",
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em"
+                    letterSpacing: "0.05em",
                   }}
                 >
                   {tab === "content" ? "📝 Content" : "👁 Preview"}
@@ -233,9 +305,19 @@ const SubmitBlog = () => {
               ))}
             </div>
 
-            <div className="glass-card" style={{ padding: "1.5rem", borderRadius: "0 8px 8px 8px", minHeight: "450px" }}>
+            <div
+              className="glass-card"
+              style={{
+                padding: "1.5rem",
+                borderRadius: "0 8px 8px 8px",
+                minHeight: "450px",
+              }}
+            >
               {activeTab === "content" ? (
-                <Field label="Content *" hint="Basic HTML supported. Line breaks are mapped to <br>">
+                <Field
+                  label="Content *"
+                  hint="Basic HTML supported. Line breaks are mapped to <br>"
+                >
                   <textarea
                     name="content"
                     value={form.content}
@@ -243,28 +325,69 @@ const SubmitBlog = () => {
                     placeholder="Write your post content here..."
                     rows={20}
                     required
-                    style={{ ...sharedInputStyle, resize: "vertical", fontFamily: "var(--font-mono)", lineHeight: "1.6" }}
+                    style={{
+                      ...sharedInputStyle,
+                      resize: "vertical",
+                      fontFamily: "var(--font-mono)",
+                      lineHeight: "1.6",
+                    }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                   />
                 </Field>
               ) : (
                 <div>
-                  <div style={{ padding: "0.75rem", background: "rgba(0,245,255,0.05)", border: "1px solid rgba(0,245,255,0.2)", borderRadius: "8px", marginBottom: "1.5rem", fontSize: "0.8rem", color: "var(--color-neon-cyan)", fontFamily: "var(--font-display)" }}>
-                    Preview is an estimation · Render may vary slightly when published
+                  <div
+                    style={{
+                      padding: "0.75rem",
+                      background: "rgba(0,245,255,0.05)",
+                      border: "1px solid rgba(0,245,255,0.2)",
+                      borderRadius: "8px",
+                      marginBottom: "1.5rem",
+                      fontSize: "0.8rem",
+                      color: "var(--color-neon-cyan)",
+                      fontFamily: "var(--font-display)",
+                    }}
+                  >
+                    Preview is an estimation · Render may vary slightly when
+                    published
                   </div>
-                  <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 900, color: "#fff", marginBottom: "1rem" }}>
+                  <h2
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "2rem",
+                      fontWeight: 900,
+                      color: "#fff",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     {form.title || "Post Title"}
                   </h2>
                   {form.excerpt && (
-                    <p style={{ color: "var(--color-text-muted)", marginBottom: "2rem", fontStyle: "italic", fontSize: "1.1rem" }}>
+                    <p
+                      style={{
+                        color: "var(--color-text-muted)",
+                        marginBottom: "2rem",
+                        fontStyle: "italic",
+                        fontSize: "1.1rem",
+                      }}
+                    >
                       {form.excerpt}
                     </p>
                   )}
                   <div
-                    style={{ color: "#e8e8ff", lineHeight: "1.8", fontSize: "1.05rem", whiteSpace: "pre-wrap" }}
+                    style={{
+                      color: "#e8e8ff",
+                      lineHeight: "1.8",
+                      fontSize: "1.05rem",
+                      whiteSpace: "pre-wrap",
+                    }}
                     dangerouslySetInnerHTML={{
-                      __html: form.content.replace(/\n/g, "<br />") || "<em>No content</em>",
+                      __html: form.content
+                        ? DOMPurify.sanitize(
+                            form.content.replace(/\n/g, "<br />"),
+                          )
+                        : "<em>No content</em>",
                     }}
                   />
                 </div>
@@ -274,26 +397,67 @@ const SubmitBlog = () => {
         </div>
 
         {/* ── Right: settings sidebar ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+        >
           <div className="glass-card" style={{ padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "var(--font-display)", fontSize: "0.9rem", fontWeight: 700, color: "#fff", uppercase: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem" }}>
+            <h3
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.9rem",
+                fontWeight: 700,
+                color: "#fff",
+                uppercase: "uppercase",
+                letterSpacing: "0.1em",
+                marginBottom: "1rem",
+              }}
+            >
               Publish Settings
             </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
               <Field label="Action">
-                <select name="status" value={form.status} onChange={handleChange} style={{ ...sharedInputStyle, cursor: "pointer", fontFamily: "var(--font-display)", fontWeight: 600 }}>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  style={{
+                    ...sharedInputStyle,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 600,
+                  }}
+                >
                   {STATUSES.map((s) => (
-                    <option key={s.value} value={s.value} style={{ background: "#0d0d28" }}>
+                    <option
+                      key={s.value}
+                      value={s.value}
+                      style={{ background: "#0d0d28" }}
+                    >
                       {s.label}
                     </option>
                   ))}
                 </select>
               </Field>
               <Field label="Category">
-                <select name="category" value={form.category} onChange={handleChange} style={{ ...sharedInputStyle, cursor: "pointer", fontFamily: "var(--font-display)", fontWeight: 600 }}>
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  style={{
+                    ...sharedInputStyle,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 600,
+                  }}
+                >
                   {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value} style={{ background: "#0d0d28" }}>
+                    <option
+                      key={c.value}
+                      value={c.value}
+                      style={{ background: "#0d0d28" }}
+                    >
                       {c.label}
                     </option>
                   ))}
@@ -304,7 +468,10 @@ const SubmitBlog = () => {
 
           {(form.category === "review" || form.category === "comparison") && (
             <div className="glass-card" style={{ padding: "1.5rem" }}>
-              <Field label="Rating (1-10)" hint="For review/comparison categories only">
+              <Field
+                label="Rating (1-10)"
+                hint="For review/comparison categories only"
+              >
                 <input
                   name="rating"
                   type="number"
@@ -320,14 +487,27 @@ const SubmitBlog = () => {
                 />
               </Field>
               {form.rating && (
-                <div style={{ marginTop: "1rem", height: "6px", borderRadius: "99px", background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
+                <div
+                  style={{
+                    marginTop: "1rem",
+                    height: "6px",
+                    borderRadius: "99px",
+                    background: "rgba(255,255,255,0.1)",
+                    overflow: "hidden",
+                  }}
+                >
                   <div
                     style={{
                       height: "100%",
                       borderRadius: "99px",
                       transition: "width 0.3s",
                       width: `${(Number(form.rating) / 10) * 100}%`,
-                      backgroundColor: Number(form.rating) >= 8 ? "#39ff14" : Number(form.rating) >= 6 ? "#00f5ff" : "#ffcc00",
+                      backgroundColor:
+                        Number(form.rating) >= 8
+                          ? "#39ff14"
+                          : Number(form.rating) >= 6
+                            ? "#00f5ff"
+                            : "#ffcc00",
                     }}
                   />
                 </div>
@@ -335,8 +515,19 @@ const SubmitBlog = () => {
             </div>
           )}
 
-          <div className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <Field label="Tags" hint="Comma separated. e.g. cherry mx, switch, tactile">
+          <div
+            className="glass-card"
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.25rem",
+            }}
+          >
+            <Field
+              label="Tags"
+              hint="Comma separated. e.g. cherry mx, switch, tactile"
+            >
               <input
                 name="tags"
                 value={form.tags}
@@ -361,7 +552,14 @@ const SubmitBlog = () => {
             </Field>
 
             {form.coverImage && (
-              <div style={{ height: "140px", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <div
+                style={{
+                  height: "140px",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
                 <img
                   src={form.coverImage}
                   alt="Cover preview"
@@ -373,12 +571,24 @@ const SubmitBlog = () => {
           </div>
 
           {error && (
-            <div style={{ padding: "1rem", background: "rgba(255,50,50,0.1)", border: "1px solid rgba(255,50,50,0.3)", borderRadius: "8px", color: "#ff5555", fontSize: "0.85rem", fontFamily: "var(--font-display)" }}>
+            <div
+              style={{
+                padding: "1rem",
+                background: "rgba(255,50,50,0.1)",
+                border: "1px solid rgba(255,50,50,0.3)",
+                borderRadius: "8px",
+                color: "#ff5555",
+                fontSize: "0.85rem",
+                fontFamily: "var(--font-display)",
+              }}
+            >
               {error}
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
+          >
             <button
               type="submit"
               disabled={isSaving}
@@ -389,10 +599,14 @@ const SubmitBlog = () => {
                 background: isSaving ? "transparent" : undefined,
                 border: isSaving ? "1px solid rgba(0,245,255,0.3)" : undefined,
                 color: isSaving ? "rgba(0,245,255,0.6)" : undefined,
-                cursor: isSaving ? "not-allowed" : "pointer"
+                cursor: isSaving ? "not-allowed" : "pointer",
               }}
             >
-              {isSaving ? "Saving..." : isEdit ? "💾 Save Changes" : "🚀 Submit Post"}
+              {isSaving
+                ? "Saving..."
+                : isEdit
+                  ? "💾 Save Changes"
+                  : "🚀 Submit Post"}
             </button>
 
             <button
@@ -404,15 +618,21 @@ const SubmitBlog = () => {
                 padding: "0.85rem",
                 background: "transparent",
                 border: "1px solid rgba(255,255,255,0.2)",
-                color: "var(--color-text-muted)"
+                color: "var(--color-text-muted)",
               }}
-              onMouseOver={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "var(--color-border-bright)"; }}
-              onMouseOut={(e) => { e.currentTarget.style.color = "var(--color-text-muted)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.color = "#fff";
+                e.currentTarget.style.borderColor =
+                  "var(--color-border-bright)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.color = "var(--color-text-muted)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+              }}
             >
               Cancel
             </button>
           </div>
-          
         </div>
       </form>
     </section>

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useGetBlogBySlugQuery } from "@/modules/blog/api/blog.api";
 import Loader from "@/components/common/Loader";
+import DOMPurify from "dompurify";
 
 const CATEGORY_META = {
   review: { label: "Review", emoji: "⭐" },
@@ -458,7 +459,9 @@ const BlogDetailPage = () => {
             whiteSpace: "pre-wrap",
           }}
           dangerouslySetInnerHTML={{
-            __html: post.content.replace(/\n/g, "<br />"),
+            __html: post.content
+              ? DOMPurify.sanitize(post.content.replace(/\n/g, "<br />"))
+              : "",
           }}
         />
 

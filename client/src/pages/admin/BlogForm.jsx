@@ -6,6 +6,7 @@ import {
   useGetAdminBlogByIdQuery,
 } from "@/modules/blog/api/blog.api";
 import Loader from "@/components/common/Loader";
+import DOMPurify from "dompurify";
 
 const CATEGORIES = [
   { value: "review", label: "⭐ Review" },
@@ -384,9 +385,11 @@ const BlogForm = () => {
                         whiteSpace: "pre-wrap",
                       }}
                       dangerouslySetInnerHTML={{
-                        __html:
-                          form.content.replace(/\n/g, "<br />") ||
-                          "<em>No content</em>",
+                        __html: form.content
+                          ? DOMPurify.sanitize(
+                              form.content.replace(/\n/g, "<br />"),
+                            )
+                          : "<em>No content</em>",
                       }}
                     />
                   </div>

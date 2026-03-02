@@ -524,8 +524,8 @@ const BlogListPage = () => {
   const fyList1 = posts[4];
   const fyList2 = posts[5];
 
-  const latestTall = posts[6];
-  const latestCards = posts.slice(7, 11);
+  const latestTall = posts[6] || posts[0];
+  const latestCards = Array.from({ length: 4 }).map((_, i) => posts[7 + i] || posts[0]);
 
   return (
     <div

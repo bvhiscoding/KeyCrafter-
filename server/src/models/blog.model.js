@@ -121,7 +121,6 @@ const blogSchema = new mongoose.Schema(
 );
 
 // ── Indexes ──────────────────────────────────────────────
-blogSchema.index({ slug: 1 });
 blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ category: 1, status: 1 });
 blogSchema.index({ author: 1 });

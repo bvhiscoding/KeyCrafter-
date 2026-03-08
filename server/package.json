@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "export:seed": "node src/scripts/export-seed-data.js",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "migrate:cloudinary": "node src/scripts/migrate-local-images-to-cloudinary.js",
     "lint": "eslint src/**/*.js",
+    "test": "echo \"Tests coming soon\" && exit 0",
     "lint:fix": "eslint src/**/*.js --fix",
-    "test": "echo \"Tests coming soon\" && exit 0"
+    "migrate:cloudinary": "node src/scripts/migrate-local-images-to-cloudinary.js",
+    "dev": "nodemon src/server.js",
+    "import:seed": "node src/scripts/import-seed-data.js"
   },
   "keywords": [],
   "author": "",

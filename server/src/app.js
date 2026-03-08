@@ -11,6 +11,30 @@ const { globalLimiter } = require('./middlewares/rateLimiter.middleware');
 
 const app = express();
 
+const normalizeOrigin = (origin) => (origin || '').trim().replace(/\/$/, '');
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS || '').split(','),
+  process.env.LOCAL_CLIENT_URL,
+  'http://localhost:5174',
+]
+  .map((origin) => normalizeOrigin(origin))
+  .filter(Boolean);
+
+const corsOptions = {
+  credentials: true,
+  origin: (origin, callback) => {
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+};
+
 // Stripe webhook must use raw body
 app.post(
   '/api/payments/stripe/webhook',
@@ -20,7 +44,7 @@ app.post(
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());

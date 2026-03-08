@@ -6,6 +6,12 @@ const stripe = require('../config/stripe');
 const orderService = require('./order.service');
 const emailService = require('./email.service');
 
+const ensureStripeConfigured = () => {
+  if (!stripe) {
+    throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, 'Stripe is not configured');
+  }
+};
+
 const createCheckoutSession = async (userId, orderId) => {
   const order = await Order.findOne({ _id: orderId, user: userId });
 
@@ -54,6 +60,8 @@ const createCheckoutSession = async (userId, orderId) => {
       quantity: 1,
     });
   }
+
+  ensureStripeConfigured();
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -152,6 +160,7 @@ const processFailedPayment = async (session) => {
 };
 
 const constructWebhookEvent = (payloadBuffer, signature) => {
+  ensureStripeConfigured();
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, 'Missing STRIPE_WEBHOOK_SECRET');
   }
@@ -191,3 +200,4 @@ module.exports = {
   constructWebhookEvent,
   handleStripeWebhookEvent,
 };
+

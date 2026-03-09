@@ -11,6 +11,7 @@ import AdminLayout from "@/modules/admin/layout/AdminLayout";
 import HomePage from "@/modules/home/page/HomePage";
 import SupportPage from "@/modules/support/page/SupportPage";
 import BlogListPage from "@/modules/blog/page/BlogListPage";
+import BlogAllPage from "@/modules/blog/page/BlogAllPage";
 import BlogDetailPage from "@/modules/blog/page/BlogDetailPage";
 
 // Pages (not yet migrated to modules — kept as-is for backward compat)
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
       { path: "cart", element: <Cart /> },
       { path: "support", element: <SupportPage /> }, // ← new module
       { path: "blog", element: <BlogListPage /> },
+      { path: "blog/all", element: <BlogAllPage /> },
       { path: "blog/:slug", element: <BlogDetailPage /> },
       {
         element: <PrivateRoute />,

@@ -1,9 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  useGetBlogsQuery,
-  useGetBlogCategoriesQuery,
-} from "@/modules/blog/api/blog.api";
+import { useGetBlogsQuery } from "@/modules/blog/api/blog.api";
 
 // ── Category config ──────────────────────────────────────────────────────────
 const CATEGORY_META = {
@@ -518,7 +515,7 @@ const LatestCard = ({ post, tall = false }) => {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 const BlogListPage = () => {
-  const [params, setParams] = useState({ page: 1, limit: 20, sort: "latest" });
+  const [params] = useState({ page: 1, limit: 20, sort: "latest" });
 
   const { data, isLoading } = useGetBlogsQuery(params);
 
@@ -542,7 +539,7 @@ const BlogListPage = () => {
     <div
       style={{
         minHeight: "100vh",
-        padding: "6rem 1rem 4rem",
+        padding: "1rem 1rem 4rem",
         maxWidth: "1280px",
         margin: "0 auto",
       }}
@@ -558,7 +555,8 @@ const BlogListPage = () => {
           gap: "1rem",
         }}
       >
-        <h1
+        <Link
+          to="/blog/all"
           style={{
             fontSize: "2rem",
             fontWeight: 900,
@@ -566,12 +564,42 @@ const BlogListPage = () => {
             margin: 0,
             fontFamily: "var(--font-display)",
             textTransform: "uppercase",
-            letterSpacing: "2px",
+            letterSpacing: "1px",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            textDecoration: "none",
+            transition: "all 0.3s ease",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.color = "var(--color-neon-cyan)";
+            e.currentTarget.querySelector("svg").style.transform =
+              "translateX(5px)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.color = "#fff";
+            e.currentTarget.querySelector("svg").style.transform =
+              "translateX(0)";
           }}
         >
-          KeyCrafter{" "}
-          <span style={{ color: "var(--color-neon-cyan)" }}>Blog</span>
-        </h1>
+          See All Blog
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              transition: "transform 0.3s ease",
+              color: "var(--color-neon-cyan)",
+            }}
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </Link>
 
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
           <Link

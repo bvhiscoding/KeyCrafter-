@@ -168,13 +168,7 @@ const ProductCard = ({ product }) => {
           <p className="product-brand">{brandName}</p>
         </div>
 
-        {product.shortDescription && (
-          <p style={{ color: "var(--color-text-muted)", fontSize: "0.82rem", lineHeight: 1.55 }}>
-            {product.shortDescription}
-          </p>
-        )}
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "0.5rem" }}>
           <p className="product-price" aria-label={`Price: ${product.price?.toLocaleString("vi-VN")} VND`}>
             {product.price?.toLocaleString("vi-VN")}{" "}
             <span style={{ fontSize: "0.7rem", fontWeight: 600, opacity: 0.7 }}>VND</span>
@@ -182,7 +176,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Action buttons */}
-        <div className="inline-actions" style={{ marginTop: "auto", paddingTop: "0.5rem" }}>
+        <div className="inline-actions" style={{ paddingTop: "0.5rem" }}>
           <Link
             to={`/products/${product.slug}`}
             className="button button-secondary"
@@ -209,3 +203,5 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
+
+

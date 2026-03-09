@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
-import ProductGrid from "@/components/product/ProductGrid";
 import EmptyState from "@/components/common/EmptyState";
 import Loader from "@/components/common/Loader";
-import useDebounce from "@/hooks/useDebounce";
-import { useGetProductsQuery } from "@/features/products/products.api";
+import ProductGrid from "@/components/product/ProductGrid";
 import { useGetCategoriesQuery } from "@/features/catalog/catalog.api";
+import { useGetProductsQuery } from "@/features/products/products.api";
+import useDebounce from "@/hooks/useDebounce";
+
+const DEFAULT_ITEMS_PER_PAGE = 8;
 
 const SearchIcon = () => (
   <svg
@@ -24,13 +26,39 @@ const SearchIcon = () => (
   </svg>
 );
 
+const selectStyles = {
+  minWidth: "160px",
+  background: "rgba(13, 13, 40, 0.85)",
+  border: "1px solid rgba(0,245,255,0.16)",
+  borderRadius: "10px",
+  padding: "0.65rem 0.85rem",
+  color: "var(--color-text)",
+  fontSize: "0.82rem",
+  outline: "none",
+  boxShadow: "inset 0 0 16px rgba(0,245,255,0.04)",
+};
+
+const optionLabelStyles = {
+  display: "grid",
+  gap: "0.3rem",
+  color: "var(--color-text-muted)",
+  fontSize: "0.68rem",
+  fontFamily: "var(--font-display)",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+};
+
 const Products = () => {
   const [keyword, setKeyword] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [sortBy, setSortBy] = useState("featured");
   const debouncedKeyword = useDebounce(keyword, 300);
 
   const { data: apiData, isLoading } = useGetProductsQuery({ limit: 100 });
   const { data: categoriesData } = useGetCategoriesQuery({ limit: 50 });
+
   const extractArray = (payload, keys = []) => {
     for (const key of keys) {
       const value = key
@@ -77,20 +105,15 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = allProducts ?? [];
 
-    // helper: lấy category text (string) từ nhiều dạng dữ liệu
     const getCategoryText = (p) => {
       const c = p?.category;
 
-      // category là string: "keycap"
       if (typeof c === "string") return c;
-
-      // category là object: { name: "keycap" } hoặc { title: "keycap" } (fallback)
       if (c && typeof c === "object") return c.name ?? c.title ?? "";
 
       return "";
     };
 
-    // helper: normalize text
     const norm = (v) => (typeof v === "string" ? v.trim().toLowerCase() : "");
 
     if (activeCategory && activeCategory !== "All") {
@@ -102,7 +125,9 @@ const Products = () => {
     if (normalized) {
       result = result.filter((p) => {
         const name = norm(p?.name);
-        const brand = norm(p?.brand);
+        const brand = norm(
+          typeof p?.brand === "string" ? p.brand : p?.brand?.name,
+        );
         const category = norm(getCategoryText(p));
 
         return (
@@ -116,43 +141,161 @@ const Products = () => {
     return result;
   }, [debouncedKeyword, activeCategory, allProducts]);
 
+  const sortedProducts = useMemo(() => {
+    const products = [...filteredProducts];
+    const getPrice = (product) => Number(product?.price ?? 0);
+    const getName = (product) => String(product?.name ?? "").toLowerCase();
+    const getDate = (product) => {
+      const value = product?.createdAt || product?.updatedAt || 0;
+      return new Date(value).getTime() || 0;
+    };
+
+    switch (sortBy) {
+      case "newest":
+        return products.sort((a, b) => getDate(b) - getDate(a));
+      case "price-asc":
+        return products.sort((a, b) => getPrice(a) - getPrice(b));
+      case "price-desc":
+        return products.sort((a, b) => getPrice(b) - getPrice(a));
+      case "name-asc":
+        return products.sort((a, b) => getName(a).localeCompare(getName(b)));
+      case "name-desc":
+        return products.sort((a, b) => getName(b).localeCompare(getName(a)));
+      case "featured":
+      default:
+        return products;
+    }
+  }, [filteredProducts, sortBy]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedProducts.length / itemsPerPage),
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedKeyword, activeCategory, itemsPerPage, sortBy]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, itemsPerPage, sortedProducts]);
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, 5];
+    }
+
+    if (currentPage >= totalPages - 2) {
+      return Array.from({ length: 5 }, (_, i) => totalPages - 4 + i);
+    }
+
+    return [
+      currentPage - 2,
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      currentPage + 2,
+    ];
+  }, [currentPage, totalPages]);
+
   return (
     <section className="stack-lg">
-      {/* Page header */}
-      <div style={{ paddingTop: "0.5rem" }}>
-        <p className="badge badge-cyan" style={{ marginBottom: "0.75rem" }}>
-          Catalog
-        </p>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 900,
-            color: "#fff",
-            lineHeight: 1.1,
-          }}
-        >
-          All{" "}
-          <span
+      <div
+        style={{
+          paddingTop: "0.5rem",
+          display: "flex",
+          alignItems: "end",
+          justifyContent: "space-between",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <p className="badge badge-cyan" style={{ marginBottom: "0.75rem" }}>
+            Catalog
+          </p>
+          <h1
             style={{
-              color: "var(--color-neon-cyan)",
-              textShadow: "0 0 20px rgba(0,245,255,0.5)",
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              fontWeight: 900,
+              color: "#fff",
+              lineHeight: 1.1,
             }}
           >
-            Products
-          </span>
-        </h1>
-        <p
-          className="muted"
-          style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}
+            All{" "}
+            <span
+              style={{
+                color: "var(--color-neon-cyan)",
+                textShadow: "0 0 20px rgba(0,245,255,0.5)",
+              }}
+            >
+              Products
+            </span>
+          </h1>
+          <p
+            className="muted"
+            style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}
+          >
+            {sortedProducts.length} items found
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+            alignItems: "end",
+          }}
         >
-          {filteredProducts.length} items found
-        </p>
+          <label style={optionLabelStyles}>
+            Items Per Page
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              style={selectStyles}
+              aria-label="Select items per page"
+            >
+              {[8, 12, 16, 24].map((value) => (
+                <option key={value} value={value}>
+                  {value} items
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label style={optionLabelStyles}>
+            Sort By
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={selectStyles}
+              aria-label="Select product sort order"
+            >
+              <option value="featured">Featured</option>
+              <option value="newest">Newest</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
+          </label>
+        </div>
       </div>
 
-      {/* Search + Filter bar */}
       <div style={{ display: "grid", gap: "1rem" }}>
-        {/* Search */}
         <div style={{ position: "relative" }}>
           <div
             style={{
@@ -177,7 +320,6 @@ const Products = () => {
           />
         </div>
 
-        {/* Category filters */}
         <div
           style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}
           role="group"
@@ -197,11 +339,73 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Grid */}
       {isLoading ? (
         <Loader message="Loading products..." />
-      ) : filteredProducts.length > 0 ? (
-        <ProductGrid products={filteredProducts} />
+      ) : sortedProducts.length > 0 ? (
+        <div className="stack-md">
+          <ProductGrid products={paginatedProducts} />
+
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexWrap: "wrap",
+                gap: "0.5rem",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="button button-secondary"
+                style={{
+                  padding: "0.45rem 0.9rem",
+                  fontSize: "0.76rem",
+                  opacity: currentPage === 1 ? 0.45 : 1,
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                }}
+              >
+                Prev
+              </button>
+
+              {pageNumbers.map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`button ${page === currentPage ? "button-primary" : "button-secondary"}`}
+                  style={{
+                    minWidth: "42px",
+                    padding: "0.45rem 0.75rem",
+                    fontSize: "0.76rem",
+                  }}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="button button-secondary"
+                style={{
+                  padding: "0.45rem 0.9rem",
+                  fontSize: "0.76rem",
+                  opacity: currentPage === totalPages ? 0.45 : 1,
+                  cursor:
+                    currentPage === totalPages ? "not-allowed" : "pointer",
+                }}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       ) : (
         <EmptyState
           title="No products found"

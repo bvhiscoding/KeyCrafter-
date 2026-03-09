@@ -2,6 +2,9 @@
  * @deprecated
  * Legacy constants bridge.
  */
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://skill-deploy-p6cg1cr40k.vercel.app/api";
+  isLocalhost ? '/api' : import.meta.env.VITE_API_BASE_URL;

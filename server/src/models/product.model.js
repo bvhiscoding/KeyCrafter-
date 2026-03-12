@@ -161,6 +161,10 @@ productSchema.index({ isFeatured: 1, isActive: 1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ soldCount: -1 });
 productSchema.index({ avgRating: -1 });
+productSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
+productSchema.index({ isActive: 1, isDeleted: 1, isFeatured: -1, createdAt: -1 });
+productSchema.index({ isActive: 1, isDeleted: 1, soldCount: -1 });
+productSchema.index({ isActive: 1, isDeleted: 1, avgRating: -1 });
 
 // Text index for search
 productSchema.index(

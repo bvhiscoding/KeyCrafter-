@@ -125,6 +125,8 @@ blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ category: 1, status: 1 });
 blogSchema.index({ author: 1 });
 blogSchema.index({ isFeatured: 1, status: 1 });
+blogSchema.index({ status: 1, viewCount: -1, publishedAt: -1 });
+blogSchema.index({ status: 1, isFeatured: -1, publishedAt: -1 });
 blogSchema.index(
   { title: 'text', excerpt: 'text', content: 'text', tags: 'text' },
   { weights: { title: 10, tags: 5, excerpt: 3, content: 1 } },

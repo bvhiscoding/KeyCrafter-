@@ -37,9 +37,13 @@ const authSlice = createSlice({
       state.user = null;
 
       localStorage.removeItem("kc_auth");
+      // Clear persisted wishlist so another user on the same device
+      // doesn't see stale wishlist data
+      localStorage.removeItem("kc_wishlist");
     },
   },
 });
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
+

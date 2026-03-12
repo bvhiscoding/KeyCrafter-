@@ -2,6 +2,19 @@ const Blog = require('../models/blog.model');
 const HTTP_STATUS = require('../constants/httpStatus');
 const ApiError = require('../utils/ApiError');
 
+const BLOG_LIST_SELECT = [
+  'title',
+  'slug',
+  'excerpt',
+  'coverImage',
+  'category',
+  'publishedAt',
+  'createdAt',
+  'readTime',
+  'viewCount',
+  'isFeatured',
+].join(' ');
+
 // ── Public: list published posts ──────────────────────────────────────────────
 const getBlogs = async (query) => {
   const { page = 1, limit = 9, category, tag, search, sort = 'latest', featured } = query;
@@ -23,12 +36,13 @@ const getBlogs = async (query) => {
 
   const [items, total] = await Promise.all([
     Blog.find(filter)
-      .select('-content -seo')
+      .select(BLOG_LIST_SELECT)
       .populate('author', 'name avatar')
       .populate('relatedProducts', 'name slug thumbnail price salePrice')
       .sort(sortObj)
       .skip(skip)
-      .limit(Number(limit)),
+      .limit(Number(limit))
+      .lean(),
     Blog.countDocuments(filter),
   ]);
 
@@ -63,10 +77,11 @@ const getBlogBySlug = async (slug) => {
 // ── Public: featured posts (for homepage widget) ──────────────────────────────
 const getFeaturedBlogs = async (limit = 4) => {
   return Blog.find({ status: 'published', isFeatured: true })
-    .select('-content -seo')
+    .select(BLOG_LIST_SELECT)
     .populate('author', 'name avatar')
     .sort({ publishedAt: -1 })
-    .limit(Number(limit));
+    .limit(Number(limit))
+    .lean();
 };
 
 // ── Admin: list all posts (any status) ───────────────────────────────────────

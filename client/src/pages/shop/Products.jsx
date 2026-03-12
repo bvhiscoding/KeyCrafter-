@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import EmptyState from "@/components/common/EmptyState";
 import Loader from "@/components/common/Loader";
@@ -8,6 +8,15 @@ import { useGetProductsQuery } from "@/features/products/products.api";
 import useDebounce from "@/hooks/useDebounce";
 
 const DEFAULT_ITEMS_PER_PAGE = 8;
+
+const SORT_OPTIONS = [
+  { label: "Featured", value: "featured" },
+  { label: "Newest", value: "newest" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
+  { label: "Top Rated", value: "rating_desc" },
+  { label: "Best Selling", value: "best_selling" },
+];
 
 const SearchIcon = () => (
   <svg
@@ -50,13 +59,12 @@ const optionLabelStyles = {
 
 const Products = () => {
   const [keyword, setKeyword] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [sortBy, setSortBy] = useState("featured");
   const debouncedKeyword = useDebounce(keyword, 300);
 
-  const { data: apiData, isLoading } = useGetProductsQuery({ limit: 100 });
   const { data: categoriesData } = useGetCategoriesQuery({ limit: 50 });
 
   const extractArray = (payload, keys = []) => {
@@ -69,12 +77,6 @@ const Products = () => {
     return [];
   };
 
-  const allProducts = extractArray(apiData, [
-    "data.items",
-    "data.products",
-    "products",
-    "data",
-  ]);
   const categoryItems = extractArray(categoriesData, [
     "data.items",
     "data.categories",
@@ -85,107 +87,66 @@ const Products = () => {
 
   const categories = useMemo(() => {
     if (!Array.isArray(categoryItems) || categoryItems.length === 0) {
-      return ["All", "Keyboard", "Switch", "Keycap", "Accessory"];
+      return [
+        { label: "All", value: "" },
+        { label: "Keyboard", value: "keyboard" },
+        { label: "Switch", value: "switch" },
+        { label: "Keycap", value: "keycap" },
+        { label: "Accessory", value: "accessory" },
+      ];
     }
 
     const fromApi = categoryItems
-      .map((c) => c?.name)
-      .filter((name) => typeof name === "string" && name.trim().length > 0)
-      .map((name) => name.trim());
+      .map((category) => {
+        const label = category?.name?.trim();
+        const value = category?.slug?.trim();
 
-    return ["All", ...Array.from(new Set(fromApi))];
+        if (!label || !value) {
+          return null;
+        }
+
+        return { label, value };
+      })
+      .filter(Boolean);
+
+    const uniqueCategories = Array.from(
+      new Map(fromApi.map((category) => [category.value, category])).values(),
+    );
+
+    return [{ label: "All", value: "" }, ...uniqueCategories];
   }, [categoryItems]);
 
-  useEffect(() => {
-    if (!categories.includes(activeCategory)) {
-      setActiveCategory("All");
-    }
-  }, [categories, activeCategory]);
-
-  const filteredProducts = useMemo(() => {
-    let result = allProducts ?? [];
-
-    const getCategoryText = (p) => {
-      const c = p?.category;
-
-      if (typeof c === "string") return c;
-      if (c && typeof c === "object") return c.name ?? c.title ?? "";
-
-      return "";
-    };
-
-    const norm = (v) => (typeof v === "string" ? v.trim().toLowerCase() : "");
-
-    if (activeCategory && activeCategory !== "All") {
-      const ac = norm(activeCategory);
-      result = result.filter((p) => norm(getCategoryText(p)).includes(ac));
-    }
-
-    const normalized = norm(debouncedKeyword);
-    if (normalized) {
-      result = result.filter((p) => {
-        const name = norm(p?.name);
-        const brand = norm(
-          typeof p?.brand === "string" ? p.brand : p?.brand?.name,
-        );
-        const category = norm(getCategoryText(p));
-
-        return (
-          name.includes(normalized) ||
-          brand.includes(normalized) ||
-          category.includes(normalized)
-        );
-      });
-    }
-
-    return result;
-  }, [debouncedKeyword, activeCategory, allProducts]);
-
-  const sortedProducts = useMemo(() => {
-    const products = [...filteredProducts];
-    const getPrice = (product) => Number(product?.price ?? 0);
-    const getName = (product) => String(product?.name ?? "").toLowerCase();
-    const getDate = (product) => {
-      const value = product?.createdAt || product?.updatedAt || 0;
-      return new Date(value).getTime() || 0;
-    };
-
-    switch (sortBy) {
-      case "newest":
-        return products.sort((a, b) => getDate(b) - getDate(a));
-      case "price-asc":
-        return products.sort((a, b) => getPrice(a) - getPrice(b));
-      case "price-desc":
-        return products.sort((a, b) => getPrice(b) - getPrice(a));
-      case "name-asc":
-        return products.sort((a, b) => getName(a).localeCompare(getName(b)));
-      case "name-desc":
-        return products.sort((a, b) => getName(b).localeCompare(getName(a)));
-      case "featured":
-      default:
-        return products;
-    }
-  }, [filteredProducts, sortBy]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(sortedProducts.length / itemsPerPage),
+  const selectedCategory = useMemo(
+    () =>
+      categories.some((category) => category.value === activeCategory)
+        ? activeCategory
+        : "",
+    [activeCategory, categories],
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedKeyword, activeCategory, itemsPerPage, sortBy]);
+  const productQueryParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      sort: sortBy,
+      ...(debouncedKeyword ? { search: debouncedKeyword } : {}),
+      ...(selectedCategory ? { category: selectedCategory } : {}),
+    }),
+    [currentPage, debouncedKeyword, itemsPerPage, selectedCategory, sortBy],
+  );
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const { data: apiData, isLoading, isFetching } =
+    useGetProductsQuery(productQueryParams);
+  const products = extractArray(apiData, [
+    "data.items",
+    "data.products",
+    "products",
+    "data",
+  ]);
 
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedProducts.slice(startIndex, startIndex + itemsPerPage);
-  }, [currentPage, itemsPerPage, sortedProducts]);
+  const pagination = apiData?.data?.pagination ?? {};
+  const totalItems = pagination.total ?? products.length;
+  const totalPages = Math.max(1, pagination.totalPages ?? 1);
 
   const pageNumbers = useMemo(() => {
     if (totalPages <= 5) {
@@ -248,7 +209,7 @@ const Products = () => {
             className="muted"
             style={{ marginTop: "0.5rem", fontSize: "0.95rem" }}
           >
-            {sortedProducts.length} items found
+            {totalItems} items found
           </p>
         </div>
 
@@ -264,7 +225,10 @@ const Products = () => {
             Items Per Page
             <select
               value={itemsPerPage}
-              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
               style={selectStyles}
               aria-label="Select items per page"
             >
@@ -280,16 +244,18 @@ const Products = () => {
             Sort By
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                setCurrentPage(1);
+              }}
               style={selectStyles}
               aria-label="Select product sort order"
             >
-              <option value="featured">Featured</option>
-              <option value="newest">Newest</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="name-asc">Name: A to Z</option>
-              <option value="name-desc">Name: Z to A</option>
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
@@ -313,7 +279,10 @@ const Products = () => {
             type="search"
             id="product-search"
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search keyboards, switches, keycaps..."
             aria-label="Search products"
             style={{ paddingLeft: "2.8rem" }}
@@ -325,25 +294,28 @@ const Products = () => {
           role="group"
           aria-label="Filter by category"
         >
-          {categories.map((cat) => (
+          {categories.map((category) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              aria-pressed={activeCategory === cat}
-              className={`button ${activeCategory === cat ? "button-primary" : "button-secondary"}`}
+              key={category.value || "all"}
+              onClick={() => {
+                setActiveCategory(category.value);
+                setCurrentPage(1);
+              }}
+              aria-pressed={selectedCategory === category.value}
+              className={`button ${selectedCategory === category.value ? "button-primary" : "button-secondary"}`}
               style={{ padding: "0.4rem 1rem", fontSize: "0.78rem" }}
             >
-              {cat}
+              {category.label}
             </button>
           ))}
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <Loader message="Loading products..." />
-      ) : sortedProducts.length > 0 ? (
+      ) : products.length > 0 ? (
         <div className="stack-md">
-          <ProductGrid products={paginatedProducts} />
+          <ProductGrid products={products} />
 
           {totalPages > 1 && (
             <div

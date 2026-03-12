@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 
+import { useAppSelector } from "@/app/hooks";
 import useCart from "@/hooks/useCart";
 import useAuth from "@/hooks/useAuth";
 import {
-  useGetWishlistQuery,
   useAddToWishlistMutation,
   useRemoveFromWishlistMutation,
 } from "@/features/user/user.api";
+
 
 /* ── Icons ─────────────────────────────────────────────────── */
 const HeartIcon = ({ filled }) => (
@@ -57,40 +58,36 @@ const ProductCard = ({ product }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Wishlist queries — only fire when logged in
-  const { data: wlData } = useGetWishlistQuery(undefined, { skip: !isAuthenticated });
+  // Read inWishlist from the persisted Redux slice (localStorage-backed).
+  // This means the heart icon is always correct on page reload without
+  // waiting for the API. The slice is kept in sync by user.api.js.
+  const wishlistIds = useAppSelector((state) => state.wishlist.ids);
   const [addToWishlist,    { isLoading: adding   }] = useAddToWishlistMutation();
   const [removeFromWishlist, { isLoading: removing }] = useRemoveFromWishlistMutation();
 
-  const productId   = product._id || product.id;
+  const productId   = String(product._id || product.id || '');
   // Support both populated objects ({ name: 'Keyboard' }) and plain strings
   const categoryName = product.category?.name || product.category || '';
   const brandName    = product.brand?.name || product.brand || '';
   const imageUrl     = product.thumbnail || product.image || null;
   const badgeStyle   = getCategoryBadgeStyle(categoryName);
 
-  // Check if this product is in the user's wishlist
-  const wishlistItems = wlData?.data ?? wlData ?? [];
-  const inWishlist = Array.isArray(wishlistItems)
-    ? wishlistItems.some((item) => {
-        const itemId = item._id || item.id || item;
-        return String(itemId) === String(productId);
-      })
-    : false;
+  // Instant check — no async needed, reads from localStorage-synced slice
+  const inWishlist = wishlistIds.includes(productId);
+  // During a mutation, show the optimistic new state (it's already toggled)
+  const isBusy = adding || removing;
 
-  const handleWishlist = async (e) => {
+  const handleWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isAuthenticated) {
       navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
-    try {
-      if (inWishlist) await removeFromWishlist(productId).unwrap();
-      else            await addToWishlist(productId).unwrap();
-    } catch (err) {
-      console.error("Wishlist toggle failed:", err);
-    }
+    if (isBusy) return;
+    // Fire-and-forget — optimistic update handles the UI immediately
+    if (inWishlist) removeFromWishlist(productId);
+    else            addToWishlist(productId);
   };
 
   return (

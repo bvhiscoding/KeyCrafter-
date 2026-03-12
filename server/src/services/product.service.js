@@ -5,12 +5,28 @@ const HTTP_STATUS = require('../constants/httpStatus');
 const ApiError = require('../utils/ApiError');
 
 const sortMap = {
+  featured: { isFeatured: -1, createdAt: -1 },
   newest: { createdAt: -1 },
   price_asc: { price: 1 },
   price_desc: { price: -1 },
   rating_desc: { avgRating: -1 },
   best_selling: { soldCount: -1 },
 };
+
+const PRODUCT_LIST_SELECT = [
+  'name',
+  'slug',
+  'price',
+  'salePrice',
+  'thumbnail',
+  'stock',
+  'isFeatured',
+  'isNew',
+  'soldCount',
+  'avgRating',
+  'reviewCount',
+  'createdAt',
+].join(' ');
 
 const getAllProducts = async (query) => {
   const page = Number(query.page) || 1;
@@ -33,24 +49,28 @@ const getAllProducts = async (query) => {
   }
 
   if (query.category) {
-    const category = await Category.findOne({ slug: query.category, isDeleted: false }).select(
-      '_id',
-    );
+    const category = await Category.findOne({ slug: query.category, isDeleted: false })
+      .select('_id')
+      .lean();
     filter.category = category ? category._id : null;
   }
 
   if (query.brand) {
-    const brand = await Brand.findOne({ slug: query.brand, isActive: true }).select('_id');
+    const brand = await Brand.findOne({ slug: query.brand, isActive: true })
+      .select('_id')
+      .lean();
     filter.brand = brand ? brand._id : null;
   }
 
   const [items, total] = await Promise.all([
     Product.find(filter)
+      .select(PRODUCT_LIST_SELECT)
       .populate('category', 'name slug')
       .populate('brand', 'name slug')
       .sort(sortMap[query.sort] || sortMap.newest)
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
     Product.countDocuments(filter),
   ]);
 

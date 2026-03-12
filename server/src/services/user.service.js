@@ -5,7 +5,8 @@ const ApiError = require('../utils/ApiError');
 
 const WISHLIST_POPULATE = {
   path: 'wishlist',
-  select: 'name slug thumbnail price salePrice stock isActive isDeleted',
+  select: 'name slug thumbnail price salePrice',
+  match: { isActive: true, isDeleted: false },
 };
 
 const safeUserSelect = '-password -refreshToken -passwordResetToken -passwordResetExpires';
@@ -107,12 +108,12 @@ const deleteAddress = async (userId, addressId) => {
   return user.addresses;
 };
 const getWishlist = async (userId) => {
-  const user = await User.findById(userId).populate(WISHLIST_POPULATE);
+  const user = await User.findById(userId).select('wishlist').populate(WISHLIST_POPULATE).lean();
   if (!user) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
   }
 
-  const items = (user.wishlist || []).filter((item) => item && item.isActive && !item.isDeleted);
+  const items = (user.wishlist || []).filter(Boolean);
   return items;
 };
 
@@ -121,7 +122,9 @@ const addToWishlist = async (userId, productId) => {
     _id: productId,
     isActive: true,
     isDeleted: false,
-  });
+  })
+    .select('_id')
+    .lean();
   if (!product) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'Product not found');
   }
@@ -130,14 +133,13 @@ const addToWishlist = async (userId, productId) => {
     userId,
     { $addToSet: { wishlist: productId } },
     { returnDocument: 'after' },
-  ).populate(WISHLIST_POPULATE);
+  ).select('_id');
 
   if (!user) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
   }
 
-  const items = (user.wishlist || []).filter((item) => item && item.isActive && !item.isDeleted);
-  return items;
+  return { productId: String(productId), wished: true };
 };
 
 const removeFromWishlist = async (userId, productId) => {
@@ -145,14 +147,13 @@ const removeFromWishlist = async (userId, productId) => {
     userId,
     { $pull: { wishlist: productId } },
     { returnDocument: 'after' },
-  ).populate(WISHLIST_POPULATE);
+  ).select('_id');
 
   if (!user) {
     throw new ApiError(HTTP_STATUS.NOT_FOUND, 'User not found');
   }
 
-  const items = (user.wishlist || []).filter((item) => item && item.isActive && !item.isDeleted);
-  return items;
+  return { productId: String(productId), wished: false };
 };
 
 const checkInWishlist = async (userId, productId) => {

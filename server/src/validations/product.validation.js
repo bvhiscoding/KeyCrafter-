@@ -43,7 +43,14 @@ const productListQuerySchema = Joi.object({
   minPrice: Joi.number().min(0),
   maxPrice: Joi.number().min(0),
   sort: Joi.string()
-    .valid('newest', 'price_asc', 'price_desc', 'rating_desc', 'best_selling')
+    .valid(
+      'featured',
+      'newest',
+      'price_asc',
+      'price_desc',
+      'rating_desc',
+      'best_selling',
+    )
     .default('newest'),
 });
 module.exports = {

@@ -20,6 +20,11 @@ const sanitizeUser = (userDoc) => {
   return user;
 };
 
+const buildClientResetLink = (resetToken) => {
+  const clientUrl = (process.env.CLIENT_URL || '').replace(/\/$/, '');
+  return `${clientUrl}/reset-password?token=${resetToken}`;
+};
+
 const register = async (userData) => {
   const userExists = await User.findOne({ email: userData.email });
 
@@ -121,7 +126,7 @@ const forgotPassword = async (email) => {
   user.passwordResetToken = hashedResetToken;
   user.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
-  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+  const resetLink = buildClientResetLink(resetToken);
   try {
     const emailResult = await emailService.sendForgotPasswordEmail({
       email: user.email,

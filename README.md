@@ -33,6 +33,12 @@ KeyCrafter is a full-stack e-commerce application built with the **MERN Stack** 
 * **Security:** Helmet, CORS, Express-rate-limit, Bcryptjs
 * **Others:** Stripe (Payment), Cloudinary & Multer (File Upload), Nodemailer (Email Sending)
 
+## 🔐 Demo Accounts
+
+| Role  | Email                    | Password   |
+|-------|--------------------------|------------|
+| Admin | admin.seed@example.com   | Admin1234  |
+
 ## 🛠️ Installation
 
 1. **Clone the repository:**
